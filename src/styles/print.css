@@ -1,0 +1,236 @@
+/* Estilos para impressão */
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm 5mm; /* top/bottom right/left */
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .print-only,
+  .print-only * {
+    visibility: visible !important;
+    display: block !important;
+  }
+
+  .print-only {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: none;
+    padding: 10mm 5mm;
+    margin: 0;
+    background: white;
+  }
+
+  /* Esconde elementos não necessários */
+  .no-print,
+  button,
+  .MuiButton-root {
+    display: none !important;
+  }
+
+  /* Força cores de fundo na impressão */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Mantém o fundo azul na impressão */
+  .bg-navy {
+    background-color: #1a237e !important;
+    color: white !important;
+  }
+
+  .bg-navy-dark {
+    background-color: #0d1b60 !important;
+  }
+
+  .bg-blue-400 {
+    background-color: #60a5fa !important;
+  }
+
+  /* Controle de quebra de página */
+  h1, h2, h3 {
+    break-after: avoid !important;
+  }
+
+  section, .section {
+    break-inside: avoid !important;
+  }
+
+  .item, .experience-item, .education-item {
+    break-inside: avoid !important;
+  }
+
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+}
+
+/* Estilos compartilhados entre templates */
+.print-only {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  width: calc(100% - 10mm); /* Desconta as margens laterais */
+  max-width: none;
+  margin: 0 5mm;
+  padding: 10mm 0;
+  background: white;
+}
+
+/* Container principal do conteúdo */
+.print-only .content-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Estilos específicos do template moderno */
+.print-only .bg-navy {
+  background-color: #1a237e;
+  color: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  width: 100%;
+  margin: 0;
+}
+
+.print-only .text-white {
+  color: white !important;
+}
+
+.print-only .text-gray-200 {
+  color: #e5e7eb !important;
+}
+
+/* Layout flexível para o template moderno */
+.print-only .flex {
+  display: flex;
+  gap: 1rem;
+}
+
+.print-only .flex-col {
+  flex-direction: column;
+}
+
+.print-only .md\:flex-row {
+  flex-direction: row;
+}
+
+.print-only .flex-grow {
+  flex-grow: 1;
+}
+
+.print-only .md\:w-64 {
+  width: 16rem;
+}
+
+/* Ajustes de espaçamento */
+.print-only .gap-6 {
+  gap: 1.5rem;
+}
+
+.print-only .space-y-6 > * + * {
+  margin-top: 1.5rem;
+}
+
+.print-only .p-6 {
+  padding: 1.5rem;
+}
+
+/* Ajustes de texto */
+.print-only .text-gray-600 {
+  color: #4b5563 !important;
+}
+
+.print-only .text-gray-800 {
+  color: #1f2937 !important;
+}
+
+/* Ajustes de fonte */
+.print-only .text-4xl {
+  font-size: 2.25rem;
+}
+
+.print-only .text-2xl {
+  font-size: 1.5rem;
+}
+
+.print-only .text-xl {
+  font-size: 1.25rem;
+}
+
+.print-only .text-sm {
+  font-size: 0.875rem;
+}
+
+.print-only .font-bold {
+  font-weight: 700;
+}
+
+.print-only .font-semibold {
+  font-weight: 600;
+}
+
+/* Links */
+.print-only a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Bordas na impressão */
+.print-only .border-white\/20 {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Ajustes de layout para melhor uso do espaço */
+.print-only .grid {
+  grid-gap: 0.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.print-only .px-4,
+.print-only .px-6,
+.print-only .px-8 {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+.print-only .py-4,
+.print-only .py-6,
+.print-only .py-8 {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+/* Ajustes para seções */
+.print-only .section {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ajustes para itens de experiência e educação */
+.print-only .experience-item,
+.print-only .education-item {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ajustes para grid de habilidades */
+.print-only .skills-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}

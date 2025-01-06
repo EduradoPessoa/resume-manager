@@ -5,24 +5,23 @@ const NotFound = () => {
   const navigate = useNavigate()
 
   return (
-    <Container maxWidth="md" className="py-16">
-      <div className="text-center">
-        <Typography variant="h1" className="mb-4">
-          404
-        </Typography>
-        <Typography variant="h4" className="mb-4">
-          Página não encontrada
-        </Typography>
-        <Typography variant="body1" color="text.secondary" className="mb-8">
-          A página que você está procurando não existe ou foi movida.
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate('/')}
-        >
-          Voltar para a página inicial
-        </Button>
-      </div>
+    <Container maxWidth="sm" className="py-16 text-center">
+      <Typography variant="h1" className="mb-4 text-6xl font-bold text-gray-800">
+        404
+      </Typography>
+      <Typography variant="h4" className="mb-4 text-gray-600">
+        Página não encontrada
+      </Typography>
+      <Typography variant="body1" className="mb-8 text-gray-500">
+        A página que você está procurando não existe ou foi movida.
+      </Typography>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => navigate('/')}
+      >
+        Voltar para a página inicial
+      </Button>
     </Container>
   )
 }

@@ -1,20 +1,26 @@
 import { useState } from 'react'
-import {
-  Container,
-  Typography,
-  Stepper,
-  Step,
-  StepLabel,
-  Button,
-  Paper,
-} from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { Container, Paper, Typography, Stepper, Step, StepLabel, TextField } from '@mui/material'
+import PersonalInfoForm from '../components/forms/PersonalInfoForm'
+import ExperienceForm from '../components/forms/ExperienceForm'
+import EducationForm from '../components/forms/EducationForm'
+import SkillsForm from '../components/forms/SkillsForm'
+import { createResume } from '../services/storage'
+import type { Resume, PersonalInfo, Experience, Education, Skill } from '../types/resume'
 
 const steps = ['Informações Pessoais', 'Experiência', 'Educação', 'Habilidades']
 
 const CreateResume = () => {
-  const [activeStep, setActiveStep] = useState(0)
   const navigate = useNavigate()
+  const [activeStep, setActiveStep] = useState(0)
+  const [resumeData, setResumeData] = useState<Partial<Resume>>({
+    title: '',
+    template_id: 1,
+    personal_info: {} as PersonalInfo,
+    experience: [] as Experience[],
+    education: [] as Education[],
+    skills: [] as Skill[],
+  })
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1)
@@ -24,17 +30,82 @@ const CreateResume = () => {
     setActiveStep((prevStep) => prevStep - 1)
   }
 
-  const handleFinish = () => {
-    // TODO: Save resume data
-    navigate('/')
+  const handleSubmit = () => {
+    const newResumeId = createResume(resumeData as Resume)
+    navigate(`/view/${newResumeId}`)
+  }
+
+  const updateResumeData = (data: Partial<Resume>) => {
+    setResumeData((prev) => ({ ...prev, ...data }))
+  }
+
+  const renderStep = () => {
+    switch (activeStep) {
+      case 0:
+        return (
+          <PersonalInfoForm
+            data={resumeData.personal_info}
+            onSubmit={(data) => {
+              updateResumeData({ personal_info: data })
+              handleNext()
+            }}
+          />
+        )
+      case 1:
+        return (
+          <ExperienceForm
+            data={resumeData.experience}
+            onSubmit={(data) => {
+              updateResumeData({ experience: data })
+              handleNext()
+            }}
+            onBack={handleBack}
+          />
+        )
+      case 2:
+        return (
+          <EducationForm
+            data={resumeData.education}
+            onSubmit={(data) => {
+              updateResumeData({ education: data })
+              handleNext()
+            }}
+            onBack={handleBack}
+          />
+        )
+      case 3:
+        return (
+          <SkillsForm
+            data={resumeData.skills}
+            onSubmit={(data) => {
+              updateResumeData({ skills: data })
+              handleSubmit()
+            }}
+            onBack={handleBack}
+          />
+        )
+      default:
+        return null
+    }
   }
 
   return (
-    <Container maxWidth="lg" className="py-8">
+    <Container maxWidth="md" className="py-8">
       <Paper className="p-6">
         <Typography variant="h4" component="h1" className="mb-6">
           Criar Novo Currículo
         </Typography>
+
+        <div className="mb-6">
+          <TextField
+            fullWidth
+            label="Nome do Currículo"
+            value={resumeData.title}
+            onChange={(e) => updateResumeData({ title: e.target.value })}
+            helperText="Dê um nome para identificar este currículo (ex: 'Currículo TI', 'Versão em Inglês')"
+            required
+          />
+        </div>
 
         <Stepper activeStep={activeStep} className="mb-8">
           {steps.map((label) => (
@@ -44,47 +115,7 @@ const CreateResume = () => {
           ))}
         </Stepper>
 
-        <div className="min-h-[400px] mb-6">
-          {/* Step content will go here */}
-          {activeStep === 0 && (
-            <Typography>
-              Formulário de informações pessoais virá aqui
-            </Typography>
-          )}
-          {activeStep === 1 && (
-            <Typography>
-              Formulário de experiência profissional virá aqui
-            </Typography>
-          )}
-          {activeStep === 2 && (
-            <Typography>
-              Formulário de educação virá aqui
-            </Typography>
-          )}
-          {activeStep === 3 && (
-            <Typography>
-              Formulário de habilidades virá aqui
-            </Typography>
-          )}
-        </div>
-
-        <div className="flex justify-between">
-          <Button
-            variant="outlined"
-            onClick={handleBack}
-            disabled={activeStep === 0}
-          >
-            Voltar
-          </Button>
-          <div>
-            <Button
-              variant="contained"
-              onClick={activeStep === steps.length - 1 ? handleFinish : handleNext}
-            >
-              {activeStep === steps.length - 1 ? 'Finalizar' : 'Próximo'}
-            </Button>
-          </div>
-        </div>
+        {renderStep()}
       </Paper>
     </Container>
   )

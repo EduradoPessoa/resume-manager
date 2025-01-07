@@ -1,14 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Container,
-  Paper,
-  Stepper,
-  Step,
-  StepLabel,
-  Button,
-  Typography,
-} from '@mui/material'
 import { createResume } from '../services/storage'
 import type { Resume } from '../types/resume'
 import PersonalInfoForm from '../components/forms/PersonalInfoForm'
@@ -34,7 +25,7 @@ const emptyResume: Resume = {
   experience: [],
   education: [],
   skills: [],
-  template_id: 'modern',
+  template: 'modern',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString()
 }
@@ -44,9 +35,14 @@ const NewResume = () => {
   const [activeStep, setActiveStep] = useState(0)
   const [resumeData, setResumeData] = useState<Resume>(emptyResume)
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const handleNext = () => {
-    setActiveStep((prevStep) => prevStep + 1)
+    if (activeStep === steps.length - 1) {
+      handleSave()
+    } else {
+      setActiveStep((prevStep) => prevStep + 1)
+    }
   }
 
   const handleBack = () => {
@@ -57,13 +53,17 @@ const NewResume = () => {
     setResumeData((prev) => ({ ...prev, ...data }))
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
-      const id = createResume(resumeData)
+      setLoading(true)
+      setError(null)
+      const id = await createResume(resumeData)
       navigate(`/view/${id}`)
     } catch (err) {
       console.error('Erro ao criar currículo:', err)
-      setError('Erro ao criar currículo')
+      setError('Erro ao criar currículo. Por favor, tente novamente.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -103,48 +103,103 @@ const NewResume = () => {
   }
 
   return (
-    <Container maxWidth="lg" className="py-8">
-      <Paper className="p-6">
-        <Typography variant="h4" component="h1" className="text-gray-800 font-bold mb-6">
-          Novo Currículo
-        </Typography>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white shadow rounded-lg">
+          {/* Header */}
+          <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Criar Novo Currículo
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Preencha as informações abaixo para criar seu currículo
+            </p>
+          </div>
 
-        <Stepper activeStep={activeStep} className="mb-8">
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+          {/* Stepper */}
+          <nav className="px-4 py-5 sm:px-6">
+            <ol className="flex items-center">
+              {steps.map((label, index) => (
+                <li
+                  key={label}
+                  className={`flex items-center ${
+                    index !== steps.length - 1 ? 'w-full' : ''
+                  }`}
+                >
+                  <span
+                    className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                      index <= activeStep
+                        ? 'bg-navy text-white'
+                        : 'bg-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {index + 1}
+                  </span>
+                  <span
+                    className={`ml-4 text-sm font-medium ${
+                      index <= activeStep ? 'text-navy' : 'text-gray-500'
+                    }`}
+                  >
+                    {label}
+                  </span>
+                  {index !== steps.length - 1 && (
+                    <div className="flex-1 ml-4">
+                      <div className="h-0.5 bg-gray-200"></div>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
 
-        {error && (
-          <Typography color="error" className="mb-4">
-            {error}
-          </Typography>
-        )}
+          {/* Form Content */}
+          <div className="px-4 py-5 sm:p-6">
+            {error && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
+                <span className="block sm:inline">{error}</span>
+              </div>
+            )}
 
-        <div className="mb-8">{getStepContent(activeStep)}</div>
+            {getStepContent(activeStep)}
+          </div>
 
-        <div className="flex justify-between">
-          <Button
-            variant="outlined"
-            onClick={handleBack}
-            disabled={activeStep === 0}
-          >
-            Voltar
-          </Button>
-          <div>
-            <Button
-              variant="contained"
-              onClick={activeStep === steps.length - 1 ? handleSave : handleNext}
-              className="ml-2"
-            >
-              {activeStep === steps.length - 1 ? 'Salvar' : 'Próximo'}
-            </Button>
+          {/* Footer */}
+          <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 rounded-b-lg border-t border-gray-200">
+            <div className="flex justify-between">
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard')}
+                className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy"
+              >
+                Cancelar
+              </button>
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  disabled={activeStep === 0 || loading}
+                  className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy disabled:opacity-50"
+                >
+                  Voltar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={loading}
+                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-navy hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy disabled:opacity-50"
+                >
+                  {loading
+                    ? 'Salvando...'
+                    : activeStep === steps.length - 1
+                    ? 'Finalizar'
+                    : 'Próximo'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </Paper>
-    </Container>
+      </div>
+    </div>
   )
 }
 

@@ -10,7 +10,7 @@ export interface PersonalInfo {
 }
 
 export interface Experience {
-  id: number
+  id: string
   company: string
   position: string
   location: string
@@ -21,7 +21,7 @@ export interface Experience {
 }
 
 export interface Education {
-  id: number
+  id: string
   institution: string
   degree: string
   field: string
@@ -33,32 +33,26 @@ export interface Education {
 }
 
 export interface Skill {
-  id: number
+  id: string
   name: string
   level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'
   years: number
 }
 
-export interface ResumeTemplate {
-  id: number
+export interface Template {
+  id: string
   name: string
   description: string
-  thumbnail_url: string
-  created_at: string
 }
-
-export type TemplateId = 'modern' | 'minimalist'
 
 export interface Resume {
   id: string
-  title: string // Nome personalizado do currículo
-  template_id: TemplateId
+  title: string
   personal_info: PersonalInfo
   experience: Experience[]
   education: Education[]
   skills: Skill[]
+  template: string
   created_at: string
   updated_at: string
 }
-
-export type ResumeFormData = Omit<Resume, 'id'>;

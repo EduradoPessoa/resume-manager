@@ -1,21 +1,7 @@
 import { useState } from 'react'
-import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Grid,
-  IconButton,
-  Card,
-  CardContent,
-  Typography,
-  FormControlLabel,
-  Checkbox,
-} from '@mui/material'
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material'
 import type { Experience } from '../../types/resume'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 interface ExperienceFormProps {
   data: Experience[]
@@ -30,7 +16,7 @@ interface ExperienceDialogProps {
 }
 
 const defaultExperience: Experience = {
-  id: 0,
+  id: '',
   position: '',
   company: '',
   location: '',
@@ -42,12 +28,43 @@ const defaultExperience: Experience = {
 
 const ExperienceDialog = ({ open, onClose, onSave, initialData }: ExperienceDialogProps) => {
   const [experience, setExperience] = useState<Experience>(initialData || defaultExperience)
+  const [errors, setErrors] = useState<Partial<Record<keyof Experience, string>>>({})
+
+  const validate = () => {
+    const newErrors: Partial<Record<keyof Experience, string>> = {}
+
+    if (!experience.position.trim()) {
+      newErrors.position = 'Cargo é obrigatório'
+    }
+
+    if (!experience.company.trim()) {
+      newErrors.company = 'Empresa é obrigatória'
+    }
+
+    if (!experience.start_date) {
+      newErrors.start_date = 'Data de início é obrigatória'
+    }
+
+    if (!experience.current && !experience.end_date) {
+      newErrors.end_date = 'Data de término é obrigatória'
+    }
+
+    if (!experience.description.trim()) {
+      newErrors.description = 'Descrição é obrigatória'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSave = () => {
+    if (!validate()) return
+
     if (!experience.id) {
-      // Gera um novo ID numérico
-      const newId = Math.floor(Math.random() * 1000000)
-      onSave({ ...experience, id: newId })
+      onSave({
+        ...experience,
+        id: Date.now().toString()
+      })
     } else {
       onSave(experience)
     }
@@ -55,92 +72,208 @@ const ExperienceDialog = ({ open, onClose, onSave, initialData }: ExperienceDial
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>
-        {initialData ? 'Editar Experiência' : 'Adicionar Experiência'}
-      </DialogTitle>
-      <DialogContent>
-        <Grid container spacing={3} className="pt-2">
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Cargo"
-              value={experience.position}
-              onChange={(e) => setExperience({ ...experience, position: e.target.value })}
-              required
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Empresa"
-              value={experience.company}
-              onChange={(e) => setExperience({ ...experience, company: e.target.value })}
-              required
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Localização"
-              value={experience.location}
-              onChange={(e) => setExperience({ ...experience, location: e.target.value })}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Data de Início"
-              type="date"
-              value={experience.start_date}
-              onChange={(e) => setExperience({ ...experience, start_date: e.target.value })}
-              InputLabelProps={{ shrink: true }}
-              required
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Data de Término"
-              type="date"
-              value={experience.end_date}
-              onChange={(e) => setExperience({ ...experience, end_date: e.target.value })}
-              InputLabelProps={{ shrink: true }}
-              disabled={experience.current}
-              required={!experience.current}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={experience.current}
-                  onChange={(e) => setExperience({ ...experience, current: e.target.checked })}
-                />
-              }
-              label="Emprego atual"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              label="Descrição"
-              value={experience.description}
-              onChange={(e) => setExperience({ ...experience, description: e.target.value })}
-              required
-            />
-          </Grid>
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
-          Salvar
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <div
+      className={`fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity ${
+        open ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      }`}
+      onClick={onClose}
+    >
+      <div
+        className="fixed inset-0 z-10 overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+            <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                {initialData ? 'Editar Experiência' : 'Adicionar Experiência'}
+              </h3>
+
+              <div className="space-y-4">
+                {/* Cargo */}
+                <div>
+                  <label
+                    htmlFor="position"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Cargo
+                  </label>
+                  <input
+                    type="text"
+                    id="position"
+                    value={experience.position}
+                    onChange={(e) =>
+                      setExperience({ ...experience, position: e.target.value })
+                    }
+                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-navy focus:ring-navy sm:text-sm ${
+                      errors.position ? 'border-red-300' : ''
+                    }`}
+                  />
+                  {errors.position && (
+                    <p className="mt-1 text-sm text-red-600">{errors.position}</p>
+                  )}
+                </div>
+
+                {/* Empresa */}
+                <div>
+                  <label
+                    htmlFor="company"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Empresa
+                  </label>
+                  <input
+                    type="text"
+                    id="company"
+                    value={experience.company}
+                    onChange={(e) =>
+                      setExperience({ ...experience, company: e.target.value })
+                    }
+                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-navy focus:ring-navy sm:text-sm ${
+                      errors.company ? 'border-red-300' : ''
+                    }`}
+                  />
+                  {errors.company && (
+                    <p className="mt-1 text-sm text-red-600">{errors.company}</p>
+                  )}
+                </div>
+
+                {/* Localização */}
+                <div>
+                  <label
+                    htmlFor="location"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Localização
+                  </label>
+                  <input
+                    type="text"
+                    id="location"
+                    value={experience.location}
+                    onChange={(e) =>
+                      setExperience({ ...experience, location: e.target.value })
+                    }
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-navy focus:ring-navy sm:text-sm"
+                  />
+                </div>
+
+                {/* Datas */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="start_date"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Data de Início
+                    </label>
+                    <input
+                      type="date"
+                      id="start_date"
+                      value={experience.start_date}
+                      onChange={(e) =>
+                        setExperience({ ...experience, start_date: e.target.value })
+                      }
+                      className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-navy focus:ring-navy sm:text-sm ${
+                        errors.start_date ? 'border-red-300' : ''
+                      }`}
+                    />
+                    {errors.start_date && (
+                      <p className="mt-1 text-sm text-red-600">{errors.start_date}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="end_date"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Data de Término
+                    </label>
+                    <input
+                      type="date"
+                      id="end_date"
+                      value={experience.end_date}
+                      onChange={(e) =>
+                        setExperience({ ...experience, end_date: e.target.value })
+                      }
+                      disabled={experience.current}
+                      className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-navy focus:ring-navy sm:text-sm ${
+                        errors.end_date ? 'border-red-300' : ''
+                      } ${experience.current ? 'bg-gray-100' : ''}`}
+                    />
+                    {errors.end_date && (
+                      <p className="mt-1 text-sm text-red-600">{errors.end_date}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Emprego Atual */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="current"
+                    checked={experience.current}
+                    onChange={(e) =>
+                      setExperience({
+                        ...experience,
+                        current: e.target.checked,
+                        end_date: e.target.checked ? '' : experience.end_date,
+                      })
+                    }
+                    className="h-4 w-4 text-navy focus:ring-navy border-gray-300 rounded"
+                  />
+                  <label htmlFor="current" className="ml-2 block text-sm text-gray-900">
+                    Emprego atual
+                  </label>
+                </div>
+
+                {/* Descrição */}
+                <div>
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Descrição
+                  </label>
+                  <textarea
+                    id="description"
+                    rows={4}
+                    value={experience.description}
+                    onChange={(e) =>
+                      setExperience({ ...experience, description: e.target.value })
+                    }
+                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-navy focus:ring-navy sm:text-sm ${
+                      errors.description ? 'border-red-300' : ''
+                    }`}
+                    placeholder="Descreva suas principais responsabilidades e conquistas..."
+                  />
+                  {errors.description && (
+                    <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+              <button
+                type="button"
+                onClick={handleSave}
+                className="inline-flex w-full justify-center rounded-md bg-navy px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 sm:ml-3 sm:w-auto"
+              >
+                Salvar
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -158,8 +291,10 @@ const ExperienceForm = ({ data, onUpdate }: ExperienceFormProps) => {
     setDialogOpen(true)
   }
 
-  const handleDelete = (id: number) => {
-    onUpdate(data.filter((exp) => exp.id !== id))
+  const handleDelete = (id: string) => {
+    if (confirm('Tem certeza que deseja excluir esta experiência?')) {
+      onUpdate(data.filter((exp) => exp.id !== id))
+    }
   }
 
   const handleSave = (experience: Experience) => {
@@ -170,60 +305,102 @@ const ExperienceForm = ({ data, onUpdate }: ExperienceFormProps) => {
     }
   }
 
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <Typography variant="h6" className="text-gray-700">
-          Experiência Profissional
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={handleAdd}
-        >
-          Adicionar
-        </Button>
-      </div>
+  const formatDate = (date: string) => {
+    if (!date) return ''
+    return format(new Date(date), 'MMM yyyy', { locale: ptBR })
+  }
 
+  return (
+    <div className="space-y-6">
+      {/* Lista de Experiências */}
       <div className="space-y-4">
         {data.map((experience) => (
-          <Card key={experience.id} variant="outlined">
-            <CardContent>
-              <div className="flex justify-between">
+          <div
+            key={experience.id}
+            className="bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+          >
+            <div className="p-4">
+              <div className="flex justify-between items-start">
                 <div>
-                  <Typography variant="h6">{experience.position}</Typography>
-                  <Typography color="textSecondary">{experience.company}</Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    {experience.start_date} - {experience.current ? 'Atual' : experience.end_date}
-                  </Typography>
-                  {experience.location && (
-                    <Typography variant="body2" color="textSecondary">
-                      {experience.location}
-                    </Typography>
-                  )}
-                  <Typography className="mt-2">{experience.description}</Typography>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    {experience.position}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {experience.company} • {experience.location}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {formatDate(experience.start_date)} -{' '}
+                    {experience.current ? 'Atual' : formatDate(experience.end_date)}
+                  </p>
                 </div>
-                <div>
-                  <IconButton onClick={() => handleEdit(experience)} size="small">
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(experience.id)} size="small" color="error">
-                    <DeleteIcon />
-                  </IconButton>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleEdit(experience)}
+                    className="text-gray-400 hover:text-navy"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(experience.id)}
+                    className="text-gray-400 hover:text-red-600"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <p className="mt-2 text-sm text-gray-600 whitespace-pre-line">
+                {experience.description}
+              </p>
+            </div>
+          </div>
         ))}
-
-        {data.length === 0 && (
-          <Typography color="textSecondary" align="center">
-            Nenhuma experiência adicionada
-          </Typography>
-        )}
       </div>
 
+      {/* Botão Adicionar */}
+      <button
+        onClick={handleAdd}
+        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-navy hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy"
+      >
+        <svg
+          className="-ml-1 mr-2 h-5 w-5"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+            clipRule="evenodd"
+          />
+        </svg>
+        Adicionar Experiência
+      </button>
+
+      {/* Modal de Edição */}
       <ExperienceDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}

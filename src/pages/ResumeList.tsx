@@ -1,142 +1,160 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Container,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  IconButton,
-  Menu,
-  MenuItem,
-} from '@mui/material'
-import {
-  Add as AddIcon,
-  MoreVert as MoreVertIcon,
-  Visibility as ViewIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-} from '@mui/icons-material'
 import { getResumes, deleteResume } from '../services/storage'
 import type { Resume } from '../types/resume'
+import { useAuth } from '../contexts/AuthContext'
 
 const ResumeList = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [resumes, setResumes] = useState<Resume[]>([])
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadResumes()
   }, [])
 
-  const loadResumes = () => {
-    const loadedResumes = getResumes()
-    setResumes(loadedResumes)
-  }
-
-  const handleDelete = (id: string) => {
+  const loadResumes = async () => {
     try {
-      deleteResume(id)
-      loadResumes()
-    } catch (err) {
-      console.error('Erro ao excluir currículo:', err)
+      setLoading(true)
+      const loadedResumes = await getResumes()
+      setResumes(loadedResumes)
+    } catch (error) {
+      console.error('Erro ao carregar currículos:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, resumeId: string) => {
-    setAnchorEl(event.currentTarget)
-    setSelectedResumeId(resumeId)
-  }
+  const handleDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este currículo?')) return
 
-  const handleMenuClose = () => {
-    setAnchorEl(null)
-    setSelectedResumeId(null)
-  }
-
-  const handleAction = (action: 'view' | 'edit' | 'delete') => {
-    if (!selectedResumeId) return
-
-    switch (action) {
-      case 'view':
-        navigate(`/view/${selectedResumeId}`)
-        break
-      case 'edit':
-        navigate(`/edit/${selectedResumeId}`)
-        break
-      case 'delete':
-        handleDelete(selectedResumeId)
-        break
+    try {
+      await deleteResume(id)
+      await loadResumes()
+    } catch (error) {
+      console.error('Erro ao excluir currículo:', error)
     }
+  }
 
-    handleMenuClose()
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-navy"></div>
+      </div>
+    )
   }
 
   return (
-    <Container maxWidth="lg" className="py-8">
-      <div className="flex justify-between items-center mb-8">
-        <Typography variant="h4" component="h1" className="text-gray-800 font-bold">
-          Meus Currículos
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={() => navigate('/new')}
-        >
-          Novo Currículo
-        </Button>
-      </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Meus Currículos</h1>
+            <p className="mt-2 text-sm text-gray-600">
+              Bem-vindo, {user?.name}! Gerencie seus currículos aqui.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/new')}
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-navy hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy"
+          >
+            <svg
+              className="-ml-1 mr-2 h-5 w-5"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Novo Currículo
+          </button>
+        </div>
 
-      <Grid container spacing={3}>
-        {resumes.map((resume) => (
-          <Grid item xs={12} sm={6} md={4} key={resume.id}>
-            <Card className="h-full flex flex-col">
-              <CardContent className="flex-1">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <Typography variant="h6" component="h2" className="text-gray-800">
-                      {resume.title}
-                    </Typography>
-                    <Typography variant="subtitle1" className="text-gray-600 mb-1">
-                      {resume.personal_info.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Criado em {new Date(resume.created_at).toLocaleDateString()}
-                      <br />
-                      Template: {resume.template_id === 'modern' ? 'Moderno' : 'Minimalista'}
-                    </Typography>
+        {resumes.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-lg shadow">
+            <svg
+              className="mx-auto h-12 w-12 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+              />
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum currículo</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Comece criando um novo currículo para sua coleção.
+            </p>
+            <div className="mt-6">
+              <button
+                onClick={() => navigate('/new')}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-navy hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy"
+              >
+                <svg
+                  className="-ml-1 mr-2 h-5 w-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Criar currículo
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {resumes.map((resume) => (
+              <div
+                key={resume.id}
+                className="relative bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+              >
+                <div className="p-6">
+                  <h3 className="text-lg font-medium text-gray-900">{resume.title}</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Template: {resume.template || 'Moderno'}
+                  </p>
+                  <div className="mt-4 flex space-x-3">
+                    <button
+                      onClick={() => navigate(`/view/${resume.id}`)}
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy"
+                    >
+                      Visualizar
+                    </button>
+                    <button
+                      onClick={() => navigate(`/edit/${resume.id}`)}
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(resume.id)}
+                      className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    >
+                      Excluir
+                    </button>
                   </div>
-                  <IconButton
-                    aria-label="mais opções"
-                    onClick={(e) => handleMenuClick(e, resume.id)}
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
                 </div>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuItem onClick={() => handleAction('view')}>
-          <ViewIcon className="mr-2" /> Visualizar
-        </MenuItem>
-        <MenuItem onClick={() => handleAction('edit')}>
-          <EditIcon className="mr-2" /> Editar
-        </MenuItem>
-        <MenuItem onClick={() => handleAction('delete')} className="text-red-600">
-          <DeleteIcon className="mr-2" /> Excluir
-        </MenuItem>
-      </Menu>
-    </Container>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 

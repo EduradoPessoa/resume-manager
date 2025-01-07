@@ -1,39 +1,73 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { ThemeProvider, createTheme } from '@mui/material'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 // Pages
+import LandingPage from './pages/LandingPage'
+import Login from './pages/Login'
+import Register from './pages/Register'
 import EditResume from './pages/EditResume'
 import ViewResume from './pages/ViewResume'
 import ResumeList from './pages/ResumeList'
 import NewResume from './pages/NewResume'
+import Upgrade from './pages/Upgrade'
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#2563eb',
-    },
-    background: {
-      default: '#f3f4f6',
-    },
-  },
-})
+// Components
+import PrivateRoute from './components/PrivateRoute'
+
+// Context
+import { AuthProvider } from './contexts/AuthContext'
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <AuthProvider>
       <Router>
         <div className="min-h-screen bg-gray-100">
           <Routes>
-            <Route path="/" element={<ResumeList />} />
-            <Route path="/new" element={<NewResume />} />
-            <Route path="/edit/:id" element={<EditResume />} />
-            <Route path="/view/:id" element={<ViewResume />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/upgrade" element={<Upgrade />} />
+
+            {/* Protected Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <ResumeList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/new"
+              element={
+                <PrivateRoute>
+                  <NewResume />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/edit/:id"
+              element={
+                <PrivateRoute>
+                  <EditResume />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/view/:id"
+              element={
+                <PrivateRoute>
+                  <ViewResume />
+                </PrivateRoute>
+              }
+            />
+
+            {/* Fallback */}
+            <Route path="*" element={<LandingPage />} />
           </Routes>
         </div>
       </Router>
-    </ThemeProvider>
+    </AuthProvider>
   )
 }
 

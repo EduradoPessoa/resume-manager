@@ -1,111 +1,144 @@
 # Resume Manager
 
-Resume Manager é uma aplicação SaaS inovadora para criar e gerenciar currículos. Com uma interface intuitiva, oferece templates personalizáveis, armazenamento seguro em banco de dados e geração fácil de currículos. Os usuários podem enviar currículos diretamente, criar cartas de apresentação e acompanhar candidaturas, maximizando a eficiência e as chances de sucesso na busca por emprego.
+Um aplicativo web moderno para criar e gerenciar currículos profissionais de forma fácil e elegante.
 
 ## 🚀 Funcionalidades
 
 - ✨ Interface moderna e responsiva com Tailwind CSS
-- 📝 Editor de currículo passo a passo
-- 💾 Armazenamento local com SQLite
-- 🎨 Templates profissionais personalizáveis
-  - Template Moderno com barra lateral
-  - Template Minimalista limpo e elegante
-- 📄 Exportação para PDF com margens otimizadas
+- 🔐 Sistema de autenticação de usuários
+- 📝 Criação e edição de currículos
 - 📱 Design responsivo para todas as telas
-- 🌍 Suporte a formatos de data localizados (BR/US)
+- 🎨 Templates profissionais
+- 🖨️ Exportação para PDF
+- 💾 Salvamento automático
+- 🔄 Sincronização entre dispositivos
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **Frontend**:
-  - React 18
-  - TypeScript
-  - Tailwind CSS
-  - React Router DOM
-  - html2pdf.js
-  - TinyMCE (Editor Rich Text)
+- React 18
+- TypeScript
+- Tailwind CSS
+- React Router v6
+- React Hook Form
+- date-fns
+- Vite
 
-- **Backend**:
-  - SQLite
-  - Better-SQLite3
+## 📦 Pré-requisitos
 
-## 📦 Instalação
+- Node.js 16+
+- npm ou yarn
+
+## 🚀 Como Executar
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/EduradoPessoa/resume-manager.git
+git clone https://github.com/seu-usuario/resume-manager.git
+cd resume-manager
 ```
 
 2. Instale as dependências:
 ```bash
-cd resume-manager
 npm install
 ```
 
-3. Execute o projeto:
+3. Execute o projeto em modo de desenvolvimento:
 ```bash
 npm run dev
 ```
 
-4. Acesse `http://localhost:5173` no seu navegador
+4. Acesse o aplicativo em `http://localhost:5173`
 
-## 🏗️ Estrutura do Projeto
+## 📝 Estrutura do Projeto
 
 ```
-src/
-  ├── components/     # Componentes React reutilizáveis
-  │   ├── common/     # Componentes compartilhados
-  │   ├── forms/      # Formulários do currículo
-  │   └── templates/  # Templates de currículo
-  ├── pages/          # Páginas da aplicação
-  ├── services/       # Serviços (banco de dados, etc)
-  ├── styles/         # Estilos e temas
-  ├── types/          # Definições de tipos TypeScript
-  └── utils/          # Funções utilitárias
+resume-manager/
+├── src/
+│   ├── components/     # Componentes reutilizáveis
+│   ├── contexts/       # Contextos do React
+│   ├── pages/          # Páginas da aplicação
+│   ├── services/       # Serviços e APIs
+│   ├── types/          # Tipos TypeScript
+│   └── utils/          # Funções utilitárias
+├── public/            # Arquivos estáticos
+└── ...
 ```
 
-## 🎯 Status do Projeto
+## 🔒 Autenticação
 
-### Implementado
-- ✅ Estrutura base do projeto
-- ✅ Configuração do Tailwind CSS
-- ✅ Sistema de roteamento
-- ✅ Formulários de criação de currículo
-- ✅ Integração com SQLite
-- ✅ Componentes base (PersonalInfo, Experience, Education, Skills)
-- ✅ Templates de currículo (Moderno e Minimalista)
-- ✅ Sistema de exportação para PDF
-- ✅ Editor Rich Text para descrições
-- ✅ Upload de foto de perfil
-- ✅ Suporte a formatos de data localizados
-- ✅ Margens otimizadas para impressão
+O sistema utiliza autenticação baseada em localStorage para desenvolvimento. Em produção, recomenda-se implementar um backend seguro com JWT.
 
-## 🗺️ Roadmap
+### Usuário de Teste
+- Email: hzimm@phoenyx.com.br
+- Senha: 123456
 
-### Próximas Funcionalidades
-- 🔲 Criação de cartas de apresentação
-- 🔲 Sistema de acompanhamento de candidaturas
-- 🔲 Envio direto de currículos
-- 🔲 Sistema de autenticação de usuários
-- 🔲 Dashboard personalizado
-- 🔲 Análise de currículo com IA
-- 🔲 Sugestões de melhorias baseadas em IA
-- 🔲 Integração com plataformas de emprego
-- 🔲 Sistema de backup na nuvem
-- 🔲 Versão mobile do aplicativo
+## 📋 Funcionalidades por Página
 
-### Melhorias Técnicas Planejadas
-- 🔲 Testes unitários e de integração
-- 🔲 CI/CD pipeline
-- 🔲 Otimização de performance
-- 🔲 PWA (Progressive Web App)
-- 🔲 Internacionalização (i18n)
-- 🔲 Tema escuro/claro
-- 🔲 Acessibilidade (WCAG)
+### Landing Page
+- Apresentação do produto
+- Links para login e registro
+- Informações sobre planos
 
-## 📝 Licença
+### Dashboard
+- Lista de currículos criados
+- Botão para criar novo currículo
+- Opções de edição e exclusão
+
+### Editor de Currículo
+- Formulário em etapas
+- Informações pessoais
+- Experiência profissional
+- Educação
+- Habilidades
+- Preview em tempo real
+
+### Visualização
+- Preview do currículo
+- Opção de impressão/PDF
+- Compartilhamento
+
+## 🎨 Personalização
+
+O projeto usa Tailwind CSS para estilização. As cores principais podem ser customizadas em `tailwind.config.js`:
+
+```javascript
+theme: {
+  extend: {
+    colors: {
+      navy: {
+        DEFAULT: '#1a237e',
+        dark: '#0d1b60',
+        light: '#534bae'
+      }
+    }
+  }
+}
+```
+
+## 🤝 Contribuindo
+
+1. Fork o projeto
+2. Crie sua branch de feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-## 👥 Contribuindo
+## 📞 Suporte
 
-Contribuições são sempre bem-vindas! Por favor, leia o guia de contribuição primeiro.
+Para suporte, envie um email para suporte@phoenyx.com.br ou abra uma issue no GitHub.
+
+## 🔄 Últimas Atualizações
+
+### v0.2.0 (06/01/2025)
+- ✨ Adicionado suporte a múltiplos templates
+- 🔐 Melhorado sistema de autenticação
+- 🎨 Atualizado design com Tailwind CSS
+- 🐛 Correções de bugs e melhorias de performance
+
+### v0.1.0 (Inicial)
+- 🚀 Lançamento inicial
+- 📝 Funcionalidades básicas de criação de currículo
+- 👤 Sistema básico de usuários

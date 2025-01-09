@@ -1,87 +1,57 @@
-import { ID, Query } from 'appwrite';
-import { databases, storage } from '../config/appwrite';
-import { DATABASES, COLLECTIONS, STORAGE } from '../config/collections';
-import type { Resume } from '../types/resume';
+import { databases } from '../config/appwrite';
+import { Resume } from '../types/resume';
 
-export const resumeService = {
-    // Create a new resume
-    async create(resume: Resume, userId: string) {
-        return await databases.createDocument(
-            DATABASES.ID,
-            COLLECTIONS.RESUMES.ID,
-            ID.unique(),
-            {
-                ...resume,
-                user_id: userId
-            }
-        );
-    },
+export const createResume = async (resume: Resume): Promise<string> => {
+  try {
+    const response = await databases.createDocument(
+      'default',
+      'resumes',
+      resume.id,
+      resume
+    );
+    return response.$id;
+  } catch (error) {
+    console.error('Error creating resume:', error);
+    throw error;
+  }
+};
 
-    // Get all resumes for a user
-    async list(userId: string) {
-        return await databases.listDocuments(
-            DATABASES.ID,
-            COLLECTIONS.RESUMES.ID,
-            [
-                Query.equal('user_id', userId)
-            ]
-        );
-    },
+export const getResume = async (id: string): Promise<Resume | null> => {
+  try {
+    const response = await databases.getDocument('default', 'resumes', id);
+    return response as unknown as Resume;
+  } catch (error) {
+    console.error('Error getting resume:', error);
+    return null;
+  }
+};
 
-    // Get a specific resume
-    async get(resumeId: string) {
-        return await databases.getDocument(
-            DATABASES.ID,
-            COLLECTIONS.RESUMES.ID,
-            resumeId
-        );
-    },
+export const updateResume = async (id: string, data: Partial<Resume>): Promise<Resume | null> => {
+  try {
+    const response = await databases.updateDocument('default', 'resumes', id, data);
+    return response as unknown as Resume;
+  } catch (error) {
+    console.error('Error updating resume:', error);
+    return null;
+  }
+};
 
-    // Update a resume
-    async update(resumeId: string, resume: Partial<Resume>) {
-        return await databases.updateDocument(
-            DATABASES.ID,
-            COLLECTIONS.RESUMES.ID,
-            resumeId,
-            resume
-        );
-    },
+export const deleteResume = async (id: string): Promise<boolean> => {
+  try {
+    await databases.deleteDocument('default', 'resumes', id);
+    return true;
+  } catch (error) {
+    console.error('Error deleting resume:', error);
+    return false;
+  }
+};
 
-    // Delete a resume
-    async delete(resumeId: string) {
-        return await databases.deleteDocument(
-            DATABASES.ID,
-            COLLECTIONS.RESUMES.ID,
-            resumeId
-        );
-    },
-
-    // Upload profile photo
-    async uploadPhoto(file: File, userId: string) {
-        const fileId = ID.unique();
-        await storage.createFile(
-            STORAGE.BUCKETS.PHOTOS.ID,
-            fileId,
-            file
-        );
-        return fileId;
-    },
-
-    // Get photo preview URL
-    getPhotoUrl(fileId: string) {
-        return storage.getFilePreview(
-            STORAGE.BUCKETS.PHOTOS.ID,
-            fileId,
-            400, // width
-            400  // height
-        );
-    },
-
-    // Delete photo
-    async deletePhoto(fileId: string) {
-        return await storage.deleteFile(
-            STORAGE.BUCKETS.PHOTOS.ID,
-            fileId
-        );
-    }
+export const listResumes = async (): Promise<Resume[]> => {
+  try {
+    const response = await databases.listDocuments('default', 'resumes');
+    return response.documents as unknown as Resume[];
+  } catch (error) {
+    console.error('Error listing resumes:', error);
+    return [];
+  }
 };

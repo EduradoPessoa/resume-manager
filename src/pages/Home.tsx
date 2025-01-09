@@ -2,12 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Grid, Card, CardContent, Typography, Button } from '@mui/material';
 import { getTemplates } from '../services/storage';
-import type { Resume, Template } from '../types/resume';
-import useAuth from '../hooks/useAuth';
+import type { Template } from '../types/resume';
 
 const Home = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
 

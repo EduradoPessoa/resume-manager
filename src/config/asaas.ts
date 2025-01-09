@@ -1,46 +1,94 @@
-export const ASAAS_CONFIG = {
-  API_KEY: process.env.ASAAS_API_KEY || '',
-  SANDBOX: process.env.NODE_ENV !== 'production',
-  WEBHOOK_TOKEN: process.env.ASAAS_WEBHOOK_TOKEN || '',
-  SUBSCRIPTION_BILLING_TYPE: 'CREDIT_CARD', // ou 'BOLETO'
-  SUBSCRIPTION_CYCLE: 'MONTHLY',
-  SUBSCRIPTION_VALUE: 9.00, // R$ 9,00
-  SUBSCRIPTION_DESCRIPTION: 'Plano Profissional Resume Manager',
-  DISCOUNT_CONFIGS: {
-    DEFAULT_DURATION: 3, // meses
-    MAX_PERCENTAGE: 50, // 50% de desconto máximo
-    MIN_PERCENTAGE: 10, // 10% de desconto mínimo
+interface AsaasConfig {
+  apiKey: string;
+  baseUrl: string;
+}
+
+const config: AsaasConfig = {
+  apiKey: import.meta.env.VITE_ASAAS_API_KEY || '',
+  baseUrl: import.meta.env.VITE_ASAAS_BASE_URL || 'https://sandbox.asaas.com/api/v3'
+};
+
+interface AsaasError {
+  message: string;
+  details?: string[];
+}
+
+interface AsaasResponse<T> {
+  data?: T;
+  error?: AsaasError;
+}
+
+export const createCustomer = async (name: string, email: string): Promise<AsaasResponse<any>> => {
+  try {
+    const response = await fetch(`${config.baseUrl}/customers`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'access_token': config.apiKey
+      },
+      body: JSON.stringify({
+        name,
+        email
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        error: {
+          message: data.message || 'Failed to create customer',
+          details: data.errors?.map((err: any) => err.description)
+        }
+      };
+    }
+
+    return { data };
+  } catch (error) {
+    return {
+      error: {
+        message: 'Failed to create customer',
+        details: [(error as Error).message]
+      }
+    };
   }
-}
+};
 
-export const getAsaasApiUrl = () => {
-  return ASAAS_CONFIG.SANDBOX
-    ? 'https://sandbox.asaas.com/api/v3'
-    : 'https://www.asaas.com/api/v3'
-}
+export const createSubscription = async (customerId: string, value: number): Promise<AsaasResponse<any>> => {
+  try {
+    const response = await fetch(`${config.baseUrl}/subscriptions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'access_token': config.apiKey
+      },
+      body: JSON.stringify({
+        customer: customerId,
+        value,
+        nextDueDate: new Date().toISOString().split('T')[0],
+        cycle: 'MONTHLY',
+        description: 'Premium Subscription'
+      })
+    });
 
-export const formatSubscriptionValue = (value: number) => {
-  return value.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  })
-}
+    const data = await response.json();
 
-export const calculateDiscountedValue = (
-  originalValue: number,
-  discountPercentage: number
-) => {
-  const discount = (originalValue * discountPercentage) / 100
-  return originalValue - discount
-}
+    if (!response.ok) {
+      return {
+        error: {
+          message: data.message || 'Failed to create subscription',
+          details: data.errors?.map((err: any) => err.description)
+        }
+      };
+    }
 
-export const validateDiscountCode = (code: string) => {
-  // TODO: Implementar validação do código de desconto
-  // Esta função deverá verificar no banco de dados se o código existe
-  // e se ainda está válido
-  return {
-    isValid: true,
-    discountPercentage: 20,
-    duration: 3
+    return { data };
+  } catch (error) {
+    return {
+      error: {
+        message: 'Failed to create subscription',
+        details: [(error as Error).message]
+      }
+    };
   }
-}
+};

@@ -1,173 +1,67 @@
-import type { Resume, Template } from '../types/resume'
-import { getCurrentUser } from './auth'
+import type { Resume, Template } from '../types/resume';
 
-const STORAGE_KEY_PREFIX = 'resumes'
-const TEMPLATES_KEY_PREFIX = 'templates'
-
-const getStorageKeyForUser = () => {
-  const user = getCurrentUser()
-  if (!user) throw new Error('Usuário não autenticado')
-  return `${STORAGE_KEY_PREFIX}_${user.id}`
-}
-
-const getTemplatesKeyForUser = () => {
-  const user = getCurrentUser()
-  if (!user) throw new Error('Usuário não autenticado')
-  return `${TEMPLATES_KEY_PREFIX}_${user.id}`
-}
-
-const defaultTemplates: Template[] = [
+const templates: Template[] = [
   {
-    id: 'modern',
+    id: 1,
     name: 'Moderno',
-    description: 'Um template moderno e profissional'
+    description: 'Um modelo moderno e profissional',
   },
   {
-    id: 'minimalist',
-    name: 'Minimalista',
-    description: 'Um template limpo e minimalista'
-  }
-]
+    id: 2,
+    name: 'Clássico',
+    description: 'Um modelo tradicional e elegante',
+  },
+  {
+    id: 3,
+    name: 'Criativo',
+    description: 'Um modelo diferenciado para áreas criativas',
+  },
+];
 
-export const initializeTemplates = () => {
-  try {
-    const templatesKey = getTemplatesKeyForUser()
-    const templates = localStorage.getItem(templatesKey)
-    if (!templates) {
-      localStorage.setItem(templatesKey, JSON.stringify(defaultTemplates))
-    }
-  } catch (error) {
-    console.error('Error initializing templates:', error)
-  }
-}
+const STORAGE_KEY = 'resumes';
 
-export const initializeStorage = () => {
-  try {
-    const storageKey = getStorageKeyForUser()
-    const resumes = localStorage.getItem(storageKey)
-    if (!resumes) {
-      localStorage.setItem(storageKey, JSON.stringify([]))
-    }
-  } catch (error) {
-    console.error('Error initializing storage:', error)
-    throw new Error('Não foi possível inicializar o armazenamento')
-  }
-}
+export const getResumes = (): Resume[] => {
+  const data = localStorage.getItem(STORAGE_KEY);
+  return data ? JSON.parse(data) : [];
+};
 
-export const getResumes = async (): Promise<Resume[]> => {
-  try {
-    initializeStorage()
-    const storageKey = getStorageKeyForUser()
-    const data = localStorage.getItem(storageKey)
-    return data ? JSON.parse(data) : []
-  } catch (error) {
-    console.error('Error getting resumes:', error)
-    throw new Error('Não foi possível carregar os currículos')
-  }
-}
+export const getResume = (id: string): Resume | null => {
+  const resumes = getResumes();
+  return resumes.find(resume => resume.id === id) || null;
+};
 
-export const getResume = async (id: string): Promise<Resume | null> => {
-  try {
-    const resumes = await getResumes()
-    return resumes.find((resume) => resume.id === id) || null
-  } catch (error) {
-    console.error('Error getting resume:', error)
-    throw new Error('Não foi possível carregar o currículo')
-  }
-}
+export const createResume = (resume: Resume): string => {
+  const resumes = getResumes();
+  resumes.push(resume);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(resumes));
+  return resume.id;
+};
 
-export const createResume = async (resume: Omit<Resume, 'id'>): Promise<string> => {
-  try {
-    const resumes = await getResumes()
-    const newResume: Resume = {
-      ...resume,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
+export const updateResume = (id: string, data: Partial<Resume>): Resume | null => {
+  const resumes = getResumes();
+  const index = resumes.findIndex(resume => resume.id === id);
+  
+  if (index === -1) return null;
+  
+  resumes[index] = { ...resumes[index], ...data };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(resumes));
+  return resumes[index];
+};
 
-    const storageKey = getStorageKeyForUser()
-    localStorage.setItem(storageKey, JSON.stringify([...resumes, newResume]))
+export const deleteResume = (id: string): boolean => {
+  const resumes = getResumes();
+  const filteredResumes = resumes.filter(resume => resume.id !== id);
+  
+  if (filteredResumes.length === resumes.length) return false;
+  
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(filteredResumes));
+  return true;
+};
 
-    return newResume.id
-  } catch (error) {
-    console.error('Error creating resume:', error)
-    throw new Error('Não foi possível criar o currículo')
-  }
-}
+export const getTemplates = (): Template[] => {
+  return templates;
+};
 
-export const updateResume = async (
-  id: string,
-  updates: Partial<Resume>
-): Promise<Resume> => {
-  try {
-    const resumes = await getResumes()
-    const index = resumes.findIndex((resume) => resume.id === id)
-
-    if (index === -1) {
-      throw new Error('Currículo não encontrado')
-    }
-
-    const updatedResume = {
-      ...resumes[index],
-      ...updates,
-      updated_at: new Date().toISOString()
-    }
-    resumes[index] = updatedResume
-
-    const storageKey = getStorageKeyForUser()
-    localStorage.setItem(storageKey, JSON.stringify(resumes))
-
-    return updatedResume
-  } catch (error) {
-    console.error('Error updating resume:', error)
-    throw new Error('Não foi possível atualizar o currículo')
-  }
-}
-
-export const deleteResume = async (id: string): Promise<void> => {
-  try {
-    const resumes = await getResumes()
-    const filteredResumes = resumes.filter((resume) => resume.id !== id)
-
-    const storageKey = getStorageKeyForUser()
-    localStorage.setItem(storageKey, JSON.stringify(filteredResumes))
-  } catch (error) {
-    console.error('Error deleting resume:', error)
-    throw new Error('Não foi possível excluir o currículo')
-  }
-}
-
-export const getTemplates = async (): Promise<Template[]> => {
-  try {
-    initializeTemplates()
-    const templatesKey = getTemplatesKeyForUser()
-    const data = localStorage.getItem(templatesKey)
-    return data ? JSON.parse(data) : defaultTemplates
-  } catch (error) {
-    console.error('Error getting templates:', error)
-    return defaultTemplates
-  }
-}
-
-export const clearAllData = () => {
-  try {
-    const user = getCurrentUser()
-    if (!user) return
-
-    // Limpar currículos
-    const storageKey = getStorageKeyForUser()
-    localStorage.removeItem(storageKey)
-
-    // Limpar templates
-    const templatesKey = getTemplatesKeyForUser()
-    localStorage.removeItem(templatesKey)
-
-    // Reinicializar armazenamento
-    initializeStorage()
-    initializeTemplates()
-  } catch (error) {
-    console.error('Error clearing data:', error)
-    throw new Error('Não foi possível limpar os dados')
-  }
-}
+export const getTemplate = (id: number): Template | null => {
+  return templates.find(template => template.id === id) || null;
+};

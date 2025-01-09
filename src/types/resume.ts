@@ -3,32 +3,31 @@ export interface PersonalInfo {
   email: string;
   phone: string;
   location: string;
-  linkedin: string;
-  portfolio: string;
-  photo: string;
-  about: string;
-  title?: string;
+  linkedin?: string;
+  portfolio?: string;
+  photo?: string;
+  about?: string;
 }
 
 export interface Experience {
   id: string;
-  company: string;
   position: string;
+  company: string;
   location: string;
   start_date: string;
-  end_date: string;
+  end_date?: string;
   current: boolean;
   description: string;
 }
 
 export interface Education {
   id: string;
-  institution: string;
   degree: string;
   field: string;
+  institution: string;
   location: string;
   start_date: string;
-  end_date: string;
+  end_date?: string;
   current: boolean;
   description: string;
 }
@@ -36,7 +35,7 @@ export interface Education {
 export interface Skill {
   id: string;
   name: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+  level: string;
   years: number;
 }
 
@@ -44,6 +43,7 @@ export interface Template {
   id: number;
   name: string;
   description: string;
+  preview_url?: string;
 }
 
 export type ResumeTemplate = Template;

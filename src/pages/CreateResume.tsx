@@ -6,9 +6,15 @@ import ExperienceForm from '../components/forms/ExperienceForm';
 import EducationForm from '../components/forms/EducationForm';
 import SkillsForm from '../components/forms/SkillsForm';
 import { createResume } from '../services/storage';
-import type { Resume } from '../types/resume';
+import type { Resume, PersonalInfo, Experience, Education, Skill } from '../types/resume';
 
 const steps = ['Informações Pessoais', 'Experiência', 'Educação', 'Habilidades'];
+
+interface FormProps<T> {
+  data: T;
+  onSubmit: (data: T) => void;
+  onBack?: () => void;
+}
 
 const CreateResume = () => {
   const navigate = useNavigate();
@@ -55,7 +61,7 @@ const CreateResume = () => {
         return (
           <PersonalInfoForm
             data={resumeData.personal_info}
-            onSubmit={(data) => {
+            onSubmit={(data: PersonalInfo) => {
               updateResumeData({ personal_info: data });
               handleNext();
             }}
@@ -65,7 +71,7 @@ const CreateResume = () => {
         return (
           <ExperienceForm
             data={resumeData.experience}
-            onSubmit={(data) => {
+            onSubmit={(data: Experience[]) => {
               updateResumeData({ experience: data });
               handleNext();
             }}
@@ -76,7 +82,7 @@ const CreateResume = () => {
         return (
           <EducationForm
             data={resumeData.education}
-            onSubmit={(data) => {
+            onSubmit={(data: Education[]) => {
               updateResumeData({ education: data });
               handleNext();
             }}
@@ -87,7 +93,7 @@ const CreateResume = () => {
         return (
           <SkillsForm
             data={resumeData.skills}
-            onSubmit={(data) => {
+            onSubmit={(data: Skill[]) => {
               updateResumeData({ skills: data });
               handleSubmit();
             }}

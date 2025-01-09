@@ -23,7 +23,7 @@ export const useAuth = () => {
 
   const login = async (email: string, password: string) => {
     try {
-      await account.createEmailSession(email, password);
+      await account.createSession(email, password);
       await checkUser();
     } catch (error) {
       throw error;

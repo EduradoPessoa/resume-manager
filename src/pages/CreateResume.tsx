@@ -16,10 +16,19 @@ const CreateResume = () => {
   const [resumeData, setResumeData] = useState<Partial<Resume>>({
     title: '',
     template_id: 1,
-    personal_info: {} as PersonalInfo,
-    experience: [] as Experience[],
-    education: [] as Education[],
-    skills: [] as Skill[],
+    personal_info: {
+      name: '',
+      email: '',
+      phone: '',
+      location: '',
+      linkedin: '',
+      portfolio: '',
+      photo: '',
+      about: ''
+    },
+    experience: [],
+    education: [],
+    skills: []
   })
 
   const handleNext = () => {
@@ -31,12 +40,16 @@ const CreateResume = () => {
   }
 
   const handleSubmit = () => {
+    if (!resumeData.personal_info || !resumeData.experience || !resumeData.education || !resumeData.skills) {
+      console.error('Missing required data');
+      return;
+    }
     const newResumeId = createResume(resumeData as Resume)
     navigate(`/view/${newResumeId}`)
   }
 
   const updateResumeData = (data: Partial<Resume>) => {
-    setResumeData((prev) => ({ ...prev, ...data }))
+    setResumeData(prev => ({ ...prev, ...data }));
   }
 
   const renderStep = () => {

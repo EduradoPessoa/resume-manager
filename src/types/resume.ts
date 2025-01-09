@@ -45,14 +45,16 @@ export interface Template {
   description: string
 }
 
+export type TemplateId = number;
+
 export interface Resume {
   id: string
   title: string
+  template_id?: TemplateId
   personal_info: PersonalInfo
   experience: Experience[]
   education: Education[]
   skills: Skill[]
-  template: string
   created_at: string
   updated_at: string
 }

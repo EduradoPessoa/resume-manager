@@ -114,6 +114,58 @@ theme: {
 }
 ```
 
+## Configuration
+
+### Appwrite Setup
+1. Create an account at [Appwrite](https://appwrite.io/)
+2. Create a new project
+3. Copy `src/config/appwrite.example.ts` to `src/config/appwrite.ts`
+4. Update `appwrite.ts` with your project credentials:
+   ```typescript
+   client.setProject('YOUR_PROJECT_ID');
+   ```
+
+### Database Migration
+This project previously used SQLite for local storage. Now it uses Appwrite as a cloud database. Here's what you need to know:
+
+1. **Database Structure**:
+   - Resumes Collection: Stores all resume data
+   - Templates Collection: Stores resume templates
+   - Files Storage: Stores profile photos and attachments
+
+2. **Data Migration**:
+   If you're migrating from the local SQLite version:
+   ```bash
+   # Run the migration script (if available)
+   npm run migrate
+   ```
+
+### Environment Variables
+Create a `.env` file in the root directory with the following variables:
+```env
+VITE_APPWRITE_PROJECT_ID=your_project_id
+VITE_APPWRITE_ENDPOINT=your_endpoint
+```
+
+### Netlify Setup
+1. Connect your GitHub repository to Netlify
+2. Add the following environment variables in Netlify:
+   - `VITE_APPWRITE_PROJECT_ID`
+   - `VITE_APPWRITE_ENDPOINT`
+
+## Development
+```bash
+# Install dependencies
+npm install
+
+# Copy configuration files
+cp src/config/appwrite.example.ts src/config/appwrite.ts
+
+# Update configuration with your credentials
+# Then run the development server
+npm run dev
+```
+
 ## 🤝 Contribuindo
 
 1. Fork o projeto

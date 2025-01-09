@@ -27,3 +27,14 @@ dist-ssr
 *.sqlite
 *.sqlite3
 *.db
+
+# Environment and config files
+.env
+.env.local
+src/config/appwrite.ts
+.netlify
+
+# Build files
+*.pid
+*.seed
+*.pid.lock

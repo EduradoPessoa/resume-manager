@@ -1,58 +1,86 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Container, Paper, Typography, Stepper, Step, StepLabel, TextField } from '@mui/material';
+import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Container, Stepper, Step, StepLabel } from '@mui/material';
 import PersonalInfoForm from '../components/forms/PersonalInfoForm';
 import ExperienceForm from '../components/forms/ExperienceForm';
 import EducationForm from '../components/forms/EducationForm';
 import SkillsForm from '../components/forms/SkillsForm';
-import { createResume } from '../services/storage';
 import type { Resume, PersonalInfo, Experience, Education, Skill } from '../types/resume';
+import { createResume } from '../services/resume';
+import useAuth from '../hooks/useAuth';
 
 const steps = ['Informações Pessoais', 'Experiência', 'Educação', 'Habilidades'];
 
-interface FormProps<T> {
-  data: T;
-  onSubmit: (data: T) => void;
-  onBack?: () => void;
-}
-
 const CreateResume = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const templateId = searchParams.get('template') || '';
+
   const [activeStep, setActiveStep] = useState(0);
-  const [resumeData, setResumeData] = useState<Resume>({
-    id: crypto.randomUUID(),
-    title: '',
-    template_id: 1,
-    personal_info: {
-      name: '',
+  const [resumeData, setResumeData] = useState<Partial<Resume>>({
+    userId: user?.id,
+    template: templateId,
+    personalInfo: {
+      fullName: '',
       email: '',
       phone: '',
       location: '',
-      linkedin: '',
-      portfolio: '',
-      photo: '',
-      about: ''
     },
     experience: [],
     education: [],
-    skills: []
+    skills: [],
   });
 
-  const handleNext = () => {
-    setActiveStep((prevStep) => prevStep + 1);
+  const handlePersonalInfoSubmit = (data: PersonalInfo) => {
+    setResumeData((prev) => ({
+      ...prev,
+      personalInfo: data,
+    }));
+    setActiveStep((prev) => prev + 1);
+  };
+
+  const handleExperienceSubmit = (data: Experience[]) => {
+    setResumeData((prev) => ({
+      ...prev,
+      experience: data,
+    }));
+    setActiveStep((prev) => prev + 1);
+  };
+
+  const handleEducationSubmit = (data: Education[]) => {
+    setResumeData((prev) => ({
+      ...prev,
+      education: data,
+    }));
+    setActiveStep((prev) => prev + 1);
+  };
+
+  const handleSkillsSubmit = async (data: Skill[]) => {
+    const finalResume: Resume = {
+      ...resumeData,
+      id: crypto.randomUUID(),
+      userId: user?.id || '',
+      name: resumeData.personalInfo?.fullName || 'Meu Currículo',
+      template: templateId,
+      personalInfo: resumeData.personalInfo!,
+      experience: resumeData.experience!,
+      education: resumeData.education!,
+      skills: data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    try {
+      await createResume(finalResume);
+      navigate('/resumes');
+    } catch (error) {
+      console.error('Error creating resume:', error);
+    }
   };
 
   const handleBack = () => {
-    setActiveStep((prevStep) => prevStep - 1);
-  };
-
-  const handleSubmit = () => {
-    const newResumeId = createResume(resumeData);
-    navigate(`/view/${newResumeId}`);
-  };
-
-  const updateResumeData = (data: Partial<Resume>) => {
-    setResumeData(prev => ({ ...prev, ...data }));
+    setActiveStep((prev) => prev - 1);
   };
 
   const renderStep = () => {
@@ -60,43 +88,31 @@ const CreateResume = () => {
       case 0:
         return (
           <PersonalInfoForm
-            data={resumeData.personal_info}
-            onSubmit={(data: PersonalInfo) => {
-              updateResumeData({ personal_info: data });
-              handleNext();
-            }}
+            initialData={resumeData.personalInfo!}
+            onSubmit={handlePersonalInfoSubmit}
           />
         );
       case 1:
         return (
           <ExperienceForm
-            data={resumeData.experience}
-            onSubmit={(data: Experience[]) => {
-              updateResumeData({ experience: data });
-              handleNext();
-            }}
+            initialData={resumeData.experience!}
+            onSubmit={handleExperienceSubmit}
             onBack={handleBack}
           />
         );
       case 2:
         return (
           <EducationForm
-            data={resumeData.education}
-            onSubmit={(data: Education[]) => {
-              updateResumeData({ education: data });
-              handleNext();
-            }}
+            initialData={resumeData.education!}
+            onSubmit={handleEducationSubmit}
             onBack={handleBack}
           />
         );
       case 3:
         return (
           <SkillsForm
-            data={resumeData.skills}
-            onSubmit={(data: Skill[]) => {
-              updateResumeData({ skills: data });
-              handleSubmit();
-            }}
+            initialData={resumeData.skills!}
+            onSubmit={handleSkillsSubmit}
             onBack={handleBack}
           />
         );
@@ -107,29 +123,14 @@ const CreateResume = () => {
 
   return (
     <Container maxWidth="md" className="py-8">
-      <Paper className="p-6">
-        <Typography variant="h4" component="h1" className="mb-6">
-          Criar Novo Currículo
-        </Typography>
-
-        <TextField
-          fullWidth
-          label="Título do Currículo"
-          value={resumeData.title}
-          onChange={(e) => updateResumeData({ title: e.target.value })}
-          className="mb-6"
-        />
-
-        <Stepper activeStep={activeStep} className="mb-6">
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-
-        {renderStep()}
-      </Paper>
+      <Stepper activeStep={activeStep} className="mb-8">
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
+      {renderStep()}
     </Container>
   );
 };

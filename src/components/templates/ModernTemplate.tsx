@@ -1,162 +1,139 @@
-import React from 'react'
-import type { Resume } from '../../types/resume'
-import { formatDate } from '../../utils/date'
+import React from 'react';
+import { formatDate } from '../../utils/dateFormatter';
+import type { Resume } from '../../types/resume';
 
 interface ModernTemplateProps {
-  resume: Resume
+  resume: Resume;
 }
 
 const ModernTemplate: React.FC<ModernTemplateProps> = ({ resume }) => {
   return (
-    <div className="flex flex-col md:flex-row gap-6 p-6">
-      {/* Coluna da esquerda - Informações principais */}
-      <div className="flex-grow space-y-6 max-w-3xl">
-        {/* Cabeçalho */}
-        <div className="flex items-center gap-4">
-          {resume.personal_info.photo && (
-            <img
-              src={resume.personal_info.photo}
-              alt={resume.personal_info.name}
-              className="w-24 h-24 rounded-full"
-            />
-          )}
-          <div>
-            <h1 className="text-4xl font-bold text-gray-800">
-              {resume.personal_info.name}
-            </h1>
-          </div>
+    <div className="min-h-screen bg-white">
+      {/* Sidebar */}
+      <div className="fixed left-0 top-0 bottom-0 w-64 bg-navy text-white p-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold mb-2">{resume.personalInfo.fullName}</h1>
+          <p className="text-sm text-gray-300">{resume.personalInfo.email}</p>
+          <p className="text-sm text-gray-300">{resume.personalInfo.phone}</p>
+          <p className="text-sm text-gray-300">{resume.personalInfo.location}</p>
         </div>
 
-        {/* Perfil */}
-        {resume.personal_info.about && (
-          <section>
-            <h2 className="text-2xl font-bold mb-2">Profile</h2>
-            <div
-              className="text-gray-600"
-              dangerouslySetInnerHTML={{ __html: resume.personal_info.about }}
-            />
-          </section>
+        {resume.personalInfo.summary && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold mb-2">Sobre</h2>
+            <p className="text-sm text-gray-300">{resume.personalInfo.summary}</p>
+          </div>
         )}
 
-        {/* Experiência */}
-        {resume.experience && resume.experience.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Experience</h2>
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold mb-2">Links</h2>
+          <div className="space-y-2">
+            {resume.personalInfo.linkedin && (
+              <a
+                href={resume.personalInfo.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-gray-300 hover:text-white block"
+              >
+                LinkedIn
+              </a>
+            )}
+            {resume.personalInfo.website && (
+              <a
+                href={resume.personalInfo.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-gray-300 hover:text-white block"
+              >
+                Website
+              </a>
+            )}
+            {resume.personalInfo.github && (
+              <a
+                href={resume.personalInfo.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-gray-300 hover:text-white block"
+              >
+                GitHub
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="ml-64 p-8">
+        {/* Experience */}
+        {resume.experience.length > 0 && (
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Experiência Profissional</h2>
             <div className="space-y-6">
               {resume.experience.map((exp) => (
-                <div key={exp.id}>
-                  <div className="flex justify-between items-baseline">
-                    <h3 className="text-xl font-semibold text-gray-800">
-                      {exp.position}
-                    </h3>
-                    <span className="text-sm text-gray-600">
-                      {formatDate(exp.start_date)} - {exp.current ? 'Present' : formatDate(exp.end_date)}
-                    </span>
-                  </div>
-                  <div className="text-gray-600 mb-2">
-                    {exp.company} • {exp.location}
-                  </div>
-                  <div
-                    className="text-gray-600"
-                    dangerouslySetInnerHTML={{ __html: exp.description }}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Educação */}
-        {resume.education && resume.education.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Education</h2>
-            <div className="space-y-6">
-              {resume.education.map((edu) => (
-                <div key={edu.id}>
-                  <div className="flex justify-between items-baseline">
-                    <h3 className="text-xl font-semibold text-gray-800">
-                      {edu.degree}
-                    </h3>
-                    <span className="text-sm text-gray-600">
-                      {formatDate(edu.start_date)} - {edu.current ? 'Present' : formatDate(edu.end_date)}
-                    </span>
-                  </div>
-                  <div className="text-gray-600 mb-2">
-                    {edu.institution} • {edu.location}
-                  </div>
-                  {edu.description && (
-                    <div
-                      className="text-gray-600"
-                      dangerouslySetInnerHTML={{ __html: edu.description }}
-                    />
+                <div key={exp.id} className="border-l-2 border-navy pl-4">
+                  <h3 className="text-xl font-semibold">{exp.position}</h3>
+                  <p className="text-gray-600 mb-2">
+                    {exp.company} | {formatDate(exp.startDate)} - {exp.current ? 'Presente' : formatDate(exp.endDate!)}
+                  </p>
+                  <p className="text-gray-700">{exp.description}</p>
+                  {exp.achievements && exp.achievements.length > 0 && (
+                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                      {exp.achievements.map((achievement, index) => (
+                        <li key={index}>{achievement}</li>
+                      ))}
+                    </ul>
                   )}
                 </div>
               ))}
             </div>
           </section>
         )}
-      </div>
 
-      {/* Coluna da direita - Contato e Habilidades */}
-      <div className="md:w-64 space-y-6">
-        <div className="bg-navy text-white p-6 rounded-lg space-y-6">
-          {/* Contato */}
-          <section>
-            <h2 className="text-xl font-bold mb-4">Contact</h2>
-            <div className="space-y-2 text-gray-200">
-              <div>{resume.personal_info.email}</div>
-              <div>{resume.personal_info.phone}</div>
-              <div>{resume.personal_info.location}</div>
-              {resume.personal_info.linkedin && (
-                <div>
-                  <a
-                    href={resume.personal_info.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-white"
-                  >
-                    LinkedIn
-                  </a>
+        {/* Education */}
+        {resume.education.length > 0 && (
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Educação</h2>
+            <div className="space-y-6">
+              {resume.education.map((edu) => (
+                <div key={edu.id} className="border-l-2 border-navy pl-4">
+                  <h3 className="text-xl font-semibold">{edu.degree}</h3>
+                  <p className="text-gray-600 mb-1">
+                    {edu.institution} | {formatDate(edu.startDate)} - {edu.current ? 'Presente' : formatDate(edu.endDate!)}
+                  </p>
+                  <p className="text-gray-600">{edu.field}</p>
+                  {edu.description && <p className="text-gray-700 mt-2">{edu.description}</p>}
+                  {edu.achievements && edu.achievements.length > 0 && (
+                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                      {edu.achievements.map((achievement, index) => (
+                        <li key={index}>{achievement}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
           </section>
+        )}
 
-          {/* Links */}
-          {resume.personal_info.portfolio && (
-            <section>
-              <h2 className="text-xl font-bold mb-4">Links</h2>
-              <div>
-                <a
-                  href={resume.personal_info.portfolio}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-200 hover:text-white"
-                >
-                  Portfolio
-                </a>
-              </div>
-            </section>
-          )}
-
-          {/* Habilidades */}
-          {resume.skills && resume.skills.length > 0 && (
-            <section>
-              <h2 className="text-xl font-bold mb-4">Skills</h2>
-              <div className="space-y-2">
-                {resume.skills.map((skill) => (
-                  <div key={skill.id} className="flex justify-between items-center">
-                    <span>{skill.name}</span>
-                    <span className="text-sm text-gray-200">{skill.level}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-        </div>
+        {/* Skills */}
+        {resume.skills.length > 0 && (
+          <section>
+            <h2 className="text-2xl font-bold mb-4">Habilidades</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {resume.skills.map((skill) => (
+                <div key={skill.id} className="flex items-center justify-between">
+                  <span className="font-medium">{skill.name}</span>
+                  <span className="text-gray-600">
+                    {skill.level} • {skill.years} {skill.years === 1 ? 'ano' : 'anos'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ModernTemplate
+export default ModernTemplate;

@@ -1,80 +1,124 @@
-import { Account, Client, ID } from 'appwrite';
-import { appwriteClient } from '../config/appwrite';
+import { ID } from 'appwrite';
+import { appwrite } from '../config/appwrite';
+import { createUser, updateUser } from './users';
+import type { User } from '../types/user';
 
 export interface User {
   id: string;
   name: string;
   email: string;
   isPremium: boolean;
+  isAdmin: boolean;
+  isBlocked: boolean;
+  createdAt: string;
+  updatedAt: string;
+  consentTerms: boolean;
+  dataUsagePreferences: {
+    marketing: boolean;
+    analytics: boolean;
+    thirdParty: boolean;
+  };
 }
 
-class AuthService {
-  private account: Account;
+export const register = async (
+  email: string,
+  password: string,
+  name: string,
+  consentTerms: boolean,
+  dataUsagePreferences: User['dataUsagePreferences']
+): Promise<User> => {
+  try {
+    // Criar conta no Appwrite
+    const account = await appwrite.account.create(
+      ID.unique(),
+      email,
+      password,
+      name
+    );
 
-  constructor() {
-    this.account = new Account(appwriteClient);
+    // Criar documento do usuário com as preferências de LGPD
+    const user = await createUser({
+      id: account.$id,
+      email,
+      name,
+      consentTerms,
+      dataUsagePreferences,
+      isAdmin: email === 'admin@phoenyx.com.br',
+    });
+
+    // Fazer login automaticamente
+    await login(email, password);
+
+    return user;
+  } catch (error) {
+    console.error('Register error:', error);
+    throw error;
   }
+};
 
-  async createAccount(email: string, password: string, name: string): Promise<User> {
-    try {
-      const response = await this.account.create(
-        ID.unique(),
-        email,
-        password,
-        name
-      );
+export const login = async (email: string, password: string): Promise<User | null> => {
+  try {
+    // Criar sessão no Appwrite
+    await appwrite.account.createSession(email, password);
 
-      return {
-        id: response.$id,
-        email: response.email,
-        name: response.name,
-        isPremium: false
-      };
-    } catch (error) {
-      console.error('Error creating account:', error);
-      throw error;
+    // Buscar usuário atual
+    const currentUser = await getCurrentUser();
+
+    if (currentUser && currentUser.isBlocked) {
+      await logout();
+      throw new Error('Sua conta está bloqueada. Entre em contato com o suporte.');
     }
-  }
 
-  async login(email: string, password: string): Promise<User> {
-    try {
-      const session = await this.account.createEmailSession(email, password);
-      const account = await this.account.get();
-
-      return {
-        id: account.$id,
-        email: account.email,
-        name: account.name,
-        isPremium: false
-      };
-    } catch (error) {
-      console.error('Error logging in:', error);
-      throw error;
+    // Atualizar último login
+    if (currentUser) {
+      await updateUser(currentUser.id, {
+        lastLogin: new Date().toISOString(),
+      });
     }
-  }
 
-  async logout(): Promise<void> {
-    try {
-      await this.account.deleteSession('current');
-    } catch (error) {
-      console.error('Error logging out:', error);
-      throw error;
-    }
+    return currentUser;
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
   }
+};
 
-  async getCurrentUser(): Promise<User | null> {
-    try {
-      const account = await this.account.get();
-      return {
-        id: account.$id,
-        email: account.email,
-        name: account.name,
-        isPremium: false
-      };
-    } catch (error) {
-      return null;
-    }
+export const logout = async (): Promise<void> => {
+  try {
+    await appwrite.account.deleteSession('current');
+  } catch (error) {
+    console.error('Logout error:', error);
+    throw error;
   }
-}
+};
 
-export const authService = new AuthService();
+export const getCurrentUser = async (): Promise<User | null> => {
+  try {
+    const account = await appwrite.account.get();
+    return {
+      id: account.$id,
+      email: account.email,
+      name: account.name,
+      isAdmin: account.email === 'admin@phoenyx.com.br',
+      isBlocked: false, // Será atualizado quando buscarmos do banco
+      createdAt: account.$createdAt,
+      updatedAt: account.$updatedAt,
+      consentTerms: true, // Será atualizado quando buscarmos do banco
+      dataUsagePreferences: {
+        marketing: false,
+        analytics: false,
+        thirdParty: false,
+      }, // Será atualizado quando buscarmos do banco
+    };
+  } catch (error) {
+    console.error('Get current user error:', error);
+    return null;
+  }
+};
+
+export default {
+  register,
+  login,
+  logout,
+  getCurrentUser,
+};

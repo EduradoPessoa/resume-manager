@@ -1,114 +1,141 @@
-import React from 'react'
-import type { Resume } from '../../types/resume'
-import { formatDate, getCurrentText } from '../../utils/date'
+import React from 'react';
+import { formatDate } from '../../utils/dateFormatter';
+import type { Resume } from '../../types/resume';
 
 interface MinimalistTemplateProps {
-  resume: Resume
+  resume: Resume;
 }
 
 const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({ resume }) => {
   return (
-    <div className="p-8 space-y-6">
-      {/* Cabeçalho */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">{resume.personal_info.name}</h1>
-        <div className="text-sm space-x-2">
-          {resume.personal_info.email && <span>{resume.personal_info.email}</span>}
-          {resume.personal_info.phone && <span>• {resume.personal_info.phone}</span>}
-          {resume.personal_info.location && <span>• {resume.personal_info.location}</span>}
-          {resume.personal_info.linkedin && (
-            <span>
-              • <a href={resume.personal_info.linkedin} target="_blank" rel="noopener noreferrer">
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="text-center py-8 bg-gray-50">
+        <h1 className="text-3xl font-bold mb-2">{resume.personalInfo.fullName}</h1>
+        <div className="text-gray-600 space-y-1">
+          <p>{resume.personalInfo.email}</p>
+          <p>{resume.personalInfo.phone}</p>
+          <p>{resume.personalInfo.location}</p>
+          <div className="flex justify-center space-x-4">
+            {resume.personalInfo.linkedin && (
+              <a
+                href={resume.personalInfo.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
                 LinkedIn
               </a>
-            </span>
-          )}
-          {resume.personal_info.portfolio && (
-            <span>
-              • <a href={resume.personal_info.portfolio} target="_blank" rel="noopener noreferrer">
+            )}
+            {resume.personalInfo.website && (
+              <a
+                href={resume.personalInfo.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
                 Portfolio
               </a>
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Perfil */}
-      {resume.personal_info.about && (
-        <div>
-          <h2 className="text-xl font-semibold border-b pb-1 mb-2">Perfil</h2>
-          <div dangerouslySetInnerHTML={{ __html: resume.personal_info.about }} />
-        </div>
-      )}
-
-      {/* Experiência */}
-      {resume.experience && resume.experience.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold border-b pb-1 mb-2">Experiência</h2>
-          {resume.experience.map((exp) => (
-            <div key={exp.id} className="mb-4">
-              <div className="flex justify-between items-baseline">
-                <h3 className="font-semibold">{exp.position}</h3>
-                <span className="text-sm">
-                  {formatDate(exp.start_date, 'pt-BR')} - {exp.current ? getCurrentText('pt-BR') : formatDate(exp.end_date, 'pt-BR')}
-                </span>
-              </div>
-              <div className="text-sm">
-                <span className="font-medium">{exp.company}</span>
-                {exp.location && <span className="text-gray-600"> • {exp.location}</span>}
-              </div>
-              <div
-                className="text-sm mt-1"
-                dangerouslySetInnerHTML={{ __html: exp.description }}
-              />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Educação */}
-      {resume.education && resume.education.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold border-b pb-1 mb-2">Educação</h2>
-          {resume.education.map((edu) => (
-            <div key={edu.id} className="mb-4">
-              <div className="flex justify-between items-baseline">
-                <h3 className="font-semibold">{edu.degree}</h3>
-                <span className="text-sm">
-                  {formatDate(edu.start_date, 'pt-BR')} - {edu.current ? getCurrentText('pt-BR') : formatDate(edu.end_date, 'pt-BR')}
-                </span>
-              </div>
-              <div className="text-sm">
-                <span className="font-medium">{edu.institution}</span>
-                {edu.location && <span className="text-gray-600"> • {edu.location}</span>}
-              </div>
-              {edu.description && (
-                <div
-                  className="text-sm mt-1"
-                  dangerouslySetInnerHTML={{ __html: edu.description }}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Habilidades */}
-      {resume.skills && resume.skills.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold border-b pb-1 mb-2">Habilidades</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {resume.skills.map((skill) => (
-              <div key={skill.id} className="flex justify-between items-center text-sm">
-                <span>{skill.name}</span>
-                <span className="text-gray-600">{skill.level}</span>
-              </div>
-            ))}
+            )}
+            {resume.personalInfo.github && (
+              <a
+                href={resume.personalInfo.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                GitHub
+              </a>
+            )}
           </div>
         </div>
-      )}
-    </div>
-  )
-}
+      </header>
 
-export default MinimalistTemplate
+      <div className="max-w-4xl mx-auto p-8">
+        {/* Summary */}
+        {resume.personalInfo.summary && (
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">Resumo Profissional</h2>
+            <p className="text-gray-700">{resume.personalInfo.summary}</p>
+          </section>
+        )}
+
+        {/* Experience */}
+        {resume.experience.length > 0 && (
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">Experiência Profissional</h2>
+            <div className="space-y-6">
+              {resume.experience.map((exp) => (
+                <div key={exp.id}>
+                  <div className="flex justify-between items-baseline">
+                    <h3 className="text-lg font-semibold">{exp.position}</h3>
+                    <span className="text-gray-600">
+                      {formatDate(exp.startDate)} - {exp.current ? 'Presente' : formatDate(exp.endDate!)}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 mb-2">{exp.company}</p>
+                  <p className="text-gray-700">{exp.description}</p>
+                  {exp.achievements && exp.achievements.length > 0 && (
+                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                      {exp.achievements.map((achievement, index) => (
+                        <li key={index}>{achievement}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Education */}
+        {resume.education.length > 0 && (
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">Educação</h2>
+            <div className="space-y-6">
+              {resume.education.map((edu) => (
+                <div key={edu.id}>
+                  <div className="flex justify-between items-baseline">
+                    <h3 className="text-lg font-semibold">{edu.degree}</h3>
+                    <span className="text-gray-600">
+                      {formatDate(edu.startDate)} - {edu.current ? 'Presente' : formatDate(edu.endDate!)}
+                    </span>
+                  </div>
+                  <p className="text-gray-600">{edu.institution}</p>
+                  <p className="text-gray-600">{edu.field}</p>
+                  {edu.description && <p className="mt-2 text-gray-700">{edu.description}</p>}
+                  {edu.achievements && edu.achievements.length > 0 && (
+                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                      {edu.achievements.map((achievement, index) => (
+                        <li key={index}>{achievement}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Skills */}
+        {resume.skills.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold mb-4">Habilidades</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {resume.skills.map((skill) => (
+                <div key={skill.id} className="flex items-center justify-between">
+                  <span className="font-medium">{skill.name}</span>
+                  <span className="text-gray-600">
+                    {skill.level} • {skill.years} {skill.years === 1 ? 'ano' : 'anos'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MinimalistTemplate;

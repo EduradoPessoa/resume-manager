@@ -1,114 +1,125 @@
-import React from 'react'
-import type { Resume } from '../types/resume'
-import { formatDate } from '../utils/date'
+import React from 'react';
+import { formatDate } from '../utils/dateFormatter';
+import type { Resume } from '../types/resume';
 
 interface PrintableResumeProps {
-  resume: Resume
+  resume: Resume;
 }
 
 const PrintableResume: React.FC<PrintableResumeProps> = ({ resume }) => {
   return (
-    <div className="print-container">
-      {/* Cabeçalho */}
-      <div className="header">
-        <h1>{resume.personal_info.name}</h1>
-        <div className="contact-info">
-          {resume.personal_info.email && <span>{resume.personal_info.email}</span>}
-          {resume.personal_info.phone && <span>{resume.personal_info.phone}</span>}
-          {resume.personal_info.location && <span>{resume.personal_info.location}</span>}
-          {resume.personal_info.linkedin && (
-            <span>
-              <a href={resume.personal_info.linkedin} target="_blank" rel="noopener noreferrer">
+    <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg">
+      {/* Header */}
+      <header className="text-center mb-8">
+        <h1 className="text-3xl font-bold mb-2">{resume.personalInfo.fullName}</h1>
+        <div className="text-gray-600 space-y-1">
+          <p>{resume.personalInfo.email}</p>
+          <p>{resume.personalInfo.phone}</p>
+          <p>{resume.personalInfo.location}</p>
+          {resume.personalInfo.linkedin && (
+            <p>
+              <a
+                href={resume.personalInfo.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
                 LinkedIn
               </a>
-            </span>
+            </p>
           )}
-          {resume.personal_info.portfolio && (
-            <span>
-              <a href={resume.personal_info.portfolio} target="_blank" rel="noopener noreferrer">
+          {resume.personalInfo.website && (
+            <p>
+              <a
+                href={resume.personalInfo.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
                 Portfolio
               </a>
-            </span>
+            </p>
           )}
         </div>
-      </div>
+      </header>
 
-      {/* Perfil */}
-      {resume.personal_info.about && (
-        <div className="section">
-          <h2>Profile</h2>
-          <div dangerouslySetInnerHTML={{ __html: resume.personal_info.about }} />
-        </div>
+      {/* Summary */}
+      {resume.personalInfo.summary && (
+        <section className="mb-8">
+          <h2 className="text-xl font-bold mb-4 border-b pb-2">Resumo Profissional</h2>
+          <p className="text-gray-700">{resume.personalInfo.summary}</p>
+        </section>
       )}
 
-      {/* Experiência */}
-      {resume.experience && resume.experience.length > 0 && (
-        <div className="section">
-          <h2>Work Experience</h2>
-          {resume.experience.map((exp) => (
-            <div key={exp.id} className="item">
-              <div className="item-header">
-                <h3>{exp.position}</h3>
-                <span className="date">
-                  {formatDate(exp.start_date)} - {exp.current ? 'Present' : formatDate(exp.end_date)}
-                </span>
-              </div>
-              <div className="item-subheader">
-                <span className="company">{exp.company}</span>
-                {exp.location && <span className="location">{exp.location}</span>}
-              </div>
-              <div
-                className="description"
-                dangerouslySetInnerHTML={{ __html: exp.description }}
-              />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Educação */}
-      {resume.education && resume.education.length > 0 && (
-        <div className="section">
-          <h2>Education</h2>
-          {resume.education.map((edu) => (
-            <div key={edu.id} className="item">
-              <div className="item-header">
-                <h3>{edu.degree}</h3>
-                <span className="date">
-                  {formatDate(edu.start_date)} - {edu.current ? 'Present' : formatDate(edu.end_date)}
-                </span>
-              </div>
-              <div className="item-subheader">
-                <span className="institution">{edu.institution}</span>
-                {edu.location && <span className="location">{edu.location}</span>}
-              </div>
-              {edu.description && (
-                <div
-                  className="description"
-                  dangerouslySetInnerHTML={{ __html: edu.description }}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Habilidades */}
-      {resume.skills && resume.skills.length > 0 && (
-        <div className="section">
-          <h2>Skills</h2>
-          <div className="skills-grid">
-            {resume.skills.map((skill) => (
-              <div key={skill.id} className="skill-item">
-                <span className="skill-name">{skill.name}</span>
-                <span className="skill-level">{skill.level}</span>
+      {/* Experience */}
+      {resume.experience.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-bold mb-4 border-b pb-2">Experiência Profissional</h2>
+          <div className="space-y-6">
+            {resume.experience.map((exp) => (
+              <div key={exp.id}>
+                <h3 className="font-bold">{exp.position}</h3>
+                <p className="text-gray-600">
+                  {exp.company} | {formatDate(exp.startDate)} - {exp.current ? 'Presente' : formatDate(exp.endDate!)}
+                </p>
+                <p className="mt-2 text-gray-700">{exp.description}</p>
+                {exp.achievements && exp.achievements.length > 0 && (
+                  <ul className="list-disc list-inside mt-2 text-gray-700">
+                    {exp.achievements.map((achievement, index) => (
+                      <li key={index}>{achievement}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
             ))}
           </div>
-        </div>
+        </section>
+      )}
+
+      {/* Education */}
+      {resume.education.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-bold mb-4 border-b pb-2">Educação</h2>
+          <div className="space-y-6">
+            {resume.education.map((edu) => (
+              <div key={edu.id}>
+                <h3 className="font-bold">{edu.degree}</h3>
+                <p className="text-gray-600">
+                  {edu.institution} | {formatDate(edu.startDate)} - {edu.current ? 'Presente' : formatDate(edu.endDate!)}
+                </p>
+                <p className="text-gray-600">{edu.field}</p>
+                {edu.description && <p className="mt-2 text-gray-700">{edu.description}</p>}
+                {edu.achievements && edu.achievements.length > 0 && (
+                  <ul className="list-disc list-inside mt-2 text-gray-700">
+                    {edu.achievements.map((achievement, index) => (
+                      <li key={index}>{achievement}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Skills */}
+      {resume.skills.length > 0 && (
+        <section>
+          <h2 className="text-xl font-bold mb-4 border-b pb-2">Habilidades</h2>
+          <div className="grid grid-cols-2 gap-4">
+            {resume.skills.map((skill) => (
+              <div key={skill.id} className="flex items-center justify-between">
+                <span className="font-medium">{skill.name}</span>
+                <span className="text-gray-600">
+                  {skill.level} • {skill.years} {skill.years === 1 ? 'ano' : 'anos'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default PrintableResume
+export default PrintableResume;

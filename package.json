@@ -18,6 +18,7 @@
     "@tailwindcss/forms": "^0.5.9",
     "@tinymce/tinymce-react": "^5.1.1",
     "@types/uuid": "^10.0.0",
+    "appwrite": "^16.1.0",
     "date-fns": "^4.1.0",
     "html2pdf.js": "^0.10.2",
     "react": "^18.3.1",

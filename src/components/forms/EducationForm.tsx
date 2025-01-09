@@ -4,8 +4,8 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 interface EducationFormProps {
-  data: Education[]
-  onUpdate: (data: Education[]) => void
+  initialData?: Education[]
+  onSubmit: (data: Education[]) => void
 }
 
 interface EducationDialogProps {
@@ -21,8 +21,8 @@ const defaultEducation: Education = {
   degree: '',
   field: '',
   location: '',
-  start_date: '',
-  end_date: '',
+  startDate: '',
+  endDate: '',
   current: false,
   description: '',
 }
@@ -46,12 +46,12 @@ const EducationDialog = ({ open, onClose, onSave, initialData }: EducationDialog
       newErrors.field = 'Área é obrigatória'
     }
 
-    if (!education.start_date) {
-      newErrors.start_date = 'Data de início é obrigatória'
+    if (!education.startDate) {
+      newErrors.startDate = 'Data de início é obrigatória'
     }
 
-    if (!education.current && !education.end_date) {
-      newErrors.end_date = 'Data de término é obrigatória'
+    if (!education.current && !education.endDate) {
+      newErrors.endDate = 'Data de término é obrigatória'
     }
 
     if (!education.description.trim()) {
@@ -194,48 +194,48 @@ const EducationDialog = ({ open, onClose, onSave, initialData }: EducationDialog
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label
-                      htmlFor="start_date"
+                      htmlFor="startDate"
                       className="block text-sm font-medium text-gray-700"
                     >
                       Data de Início
                     </label>
                     <input
                       type="date"
-                      id="start_date"
-                      value={education.start_date}
+                      id="startDate"
+                      value={education.startDate}
                       onChange={(e) =>
-                        setEducation({ ...education, start_date: e.target.value })
+                        setEducation({ ...education, startDate: e.target.value })
                       }
                       className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-navy focus:ring-navy sm:text-sm ${
-                        errors.start_date ? 'border-red-300' : ''
+                        errors.startDate ? 'border-red-300' : ''
                       }`}
                     />
-                    {errors.start_date && (
-                      <p className="mt-1 text-sm text-red-600">{errors.start_date}</p>
+                    {errors.startDate && (
+                      <p className="mt-1 text-sm text-red-600">{errors.startDate}</p>
                     )}
                   </div>
 
                   <div>
                     <label
-                      htmlFor="end_date"
+                      htmlFor="endDate"
                       className="block text-sm font-medium text-gray-700"
                     >
                       Data de Término
                     </label>
                     <input
                       type="date"
-                      id="end_date"
-                      value={education.end_date}
+                      id="endDate"
+                      value={education.endDate}
                       onChange={(e) =>
-                        setEducation({ ...education, end_date: e.target.value })
+                        setEducation({ ...education, endDate: e.target.value })
                       }
                       disabled={education.current}
                       className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-navy focus:ring-navy sm:text-sm ${
-                        errors.end_date ? 'border-red-300' : ''
+                        errors.endDate ? 'border-red-300' : ''
                       } ${education.current ? 'bg-gray-100' : ''}`}
                     />
-                    {errors.end_date && (
-                      <p className="mt-1 text-sm text-red-600">{errors.end_date}</p>
+                    {errors.endDate && (
+                      <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>
                     )}
                   </div>
                 </div>
@@ -250,7 +250,7 @@ const EducationDialog = ({ open, onClose, onSave, initialData }: EducationDialog
                       setEducation({
                         ...education,
                         current: e.target.checked,
-                        end_date: e.target.checked ? '' : education.end_date,
+                        endDate: e.target.checked ? '' : education.endDate,
                       })
                     }
                     className="h-4 w-4 text-navy focus:ring-navy border-gray-300 rounded"
@@ -310,9 +310,10 @@ const EducationDialog = ({ open, onClose, onSave, initialData }: EducationDialog
   )
 }
 
-const EducationForm = ({ data, onUpdate }: EducationFormProps) => {
+const EducationForm = ({ initialData, onSubmit }: EducationFormProps) => {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEducation, setEditingEducation] = useState<Education | undefined>()
+  const [education, setEducation] = useState<Education[]>(initialData || [])
 
   const handleAdd = () => {
     setEditingEducation(undefined)
@@ -326,15 +327,15 @@ const EducationForm = ({ data, onUpdate }: EducationFormProps) => {
 
   const handleDelete = (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta educação?')) {
-      onUpdate(data.filter((edu) => edu.id !== id))
+      setEducation(education.filter((edu) => edu.id !== id))
     }
   }
 
   const handleSave = (education: Education) => {
     if (editingEducation) {
-      onUpdate(data.map((edu) => (edu.id === education.id ? education : edu)))
+      setEducation(education.map((edu) => (edu.id === education.id ? education : edu)))
     } else {
-      onUpdate([...data, education])
+      setEducation([...education, education])
     }
   }
 
@@ -347,7 +348,7 @@ const EducationForm = ({ data, onUpdate }: EducationFormProps) => {
     <div className="space-y-6">
       {/* Lista de Educação */}
       <div className="space-y-4">
-        {data.map((education) => (
+        {education.map((education) => (
           <div
             key={education.id}
             className="bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow"
@@ -362,8 +363,8 @@ const EducationForm = ({ data, onUpdate }: EducationFormProps) => {
                     {education.institution} • {education.location}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {formatDate(education.start_date)} -{' '}
-                    {education.current ? 'Cursando' : formatDate(education.end_date)}
+                    {formatDate(education.startDate)} -{' '}
+                    {education.current ? 'Cursando' : formatDate(education.endDate)}
                   </p>
                 </div>
                 <div className="flex space-x-2">

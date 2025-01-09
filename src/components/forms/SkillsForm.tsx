@@ -12,34 +12,53 @@ import {
   Box
 } from '@mui/material';
 import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
-import type { Skill } from '../../types/resume';
-
-export type SkillLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+import type { Skill, SkillLevel } from '../../types';
 
 export interface SkillsFormProps {
   data: Skill[];
-  onSubmit: (skills: Skill[]) => void;
+  onUpdate: (skills: Skill[]) => void;
   onBack?: () => void;
 }
 
-const emptySkill = (): Skill => ({
+interface InternalSkill extends Skill {
+  id: string;
+}
+
+const emptySkill = (): InternalSkill => ({
   id: crypto.randomUUID(),
   name: '',
-  level: 'Beginner' as SkillLevel,
+  level: 1,
   years: 0
 });
 
-const SkillsForm = ({ data, onSubmit, onBack }: SkillsFormProps) => {
-  const [skills, setSkills] = useState<Skill[]>(data || []);
-  const [currentSkill, setCurrentSkill] = useState<Skill>({
-    id: '',
-    name: '',
-    level: 'Beginner' as SkillLevel,
-    years: 0
-  });
+const skillLevelLabels: Record<SkillLevel, string> = {
+  1: 'Iniciante',
+  2: 'Intermediário',
+  3: 'Avançado',
+  4: 'Especialista'
+};
+
+const SkillsForm = ({ data, onUpdate, onBack }: SkillsFormProps) => {
+  const [skills, setSkills] = useState<InternalSkill[]>(
+    data.map(skill => ({ ...skill, id: crypto.randomUUID() }))
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSkillChange = (index: number, field: keyof Skill, value: string | number | SkillLevel) => {
+  const validateSkill = (skill: InternalSkill) => {
+    const newErrors: Record<string, string> = {};
+
+    if (!skill.name) {
+      newErrors[`${skill.id}-name`] = 'O nome da habilidade é obrigatório';
+    }
+    if (skill.years < 0) {
+      newErrors[`${skill.id}-years`] = 'Anos de experiência deve ser maior ou igual a 0';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSkillChange = (index: number, field: keyof Skill, value: any) => {
     const updatedSkills = [...skills];
     updatedSkills[index] = {
       ...updatedSkills[index],
@@ -49,61 +68,21 @@ const SkillsForm = ({ data, onSubmit, onBack }: SkillsFormProps) => {
     validateSkill(updatedSkills[index]);
   };
 
-  const validateSkill = (skill: Skill) => {
-    const newErrors: Record<string, string> = {};
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    if (!skill.name) {
-      newErrors[`name-${skill.id}`] = 'Nome é obrigatório';
+    const isValid = skills.every(validateSkill);
+    if (isValid) {
+      onUpdate(skills.map(({ id, ...skill }) => skill));
     }
-    
-    if (skill.years < 0) {
-      newErrors[`years-${skill.id}`] = 'Anos de experiência deve ser maior ou igual a 0';
-    }
-    
-    setErrors(prev => ({ ...prev, ...newErrors }));
-    return Object.keys(newErrors).length === 0;
   };
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    let isValid = true;
-
-    skills.forEach(skill => {
-      if (!skill.name) {
-        newErrors[`name-${skill.id}`] = 'Nome é obrigatório';
-        isValid = false;
-      }
-      if (skill.years < 0) {
-        newErrors[`years-${skill.id}`] = 'Anos de experiência deve ser maior ou igual a 0';
-        isValid = false;
-      }
-    });
-
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const handleAddSkill = () => {
+  const addSkill = () => {
     setSkills([...skills, emptySkill()]);
   };
 
-  const handleRemoveSkill = (index: number) => {
-    if (skills.length > 1) {
-      const updatedSkills = [...skills];
-      updatedSkills.splice(index, 1);
-      setSkills(updatedSkills);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      onSubmit(skills);
-    }
-  };
-
-  const handleLevelChange = (level: SkillLevel) => {
-    setCurrentSkill({ ...currentSkill, level });
+  const removeSkill = (index: number) => {
+    setSkills(skills.filter((_, i) => i !== index));
   };
 
   return (
@@ -113,20 +92,36 @@ const SkillsForm = ({ data, onSubmit, onBack }: SkillsFormProps) => {
       </Typography>
 
       {skills.map((skill, index) => (
-        <Box key={skill.id} sx={{ mb: 3, p: 2, border: '1px solid #eee', borderRadius: 1 }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={4}>
+        <Box key={skill.id} sx={{ mb: 4, p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={11}>
+              <Typography variant="subtitle1">
+                {skill.name || `Habilidade ${index + 1}`}
+              </Typography>
+            </Grid>
+            <Grid item xs={1}>
+              <IconButton 
+                onClick={() => removeSkill(index)}
+                color="error"
+                size="small"
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Nome da Habilidade"
                 value={skill.name}
                 onChange={(e) => handleSkillChange(index, 'name', e.target.value)}
-                error={!!errors[`name-${skill.id}`]}
-                helperText={errors[`name-${skill.id}`]}
+                error={!!errors[`${skill.id}-name`]}
+                helperText={errors[`${skill.id}-name`]}
+                required
               />
             </Grid>
 
-            <Grid item xs={12} sm={3}>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Nível</InputLabel>
                 <Select
@@ -134,75 +129,63 @@ const SkillsForm = ({ data, onSubmit, onBack }: SkillsFormProps) => {
                   label="Nível"
                   onChange={(e) => handleSkillChange(index, 'level', e.target.value as SkillLevel)}
                 >
-                  <MenuItem value="Beginner">Iniciante</MenuItem>
-                  <MenuItem value="Intermediate">Intermediário</MenuItem>
-                  <MenuItem value="Advanced">Avançado</MenuItem>
-                  <MenuItem value="Expert">Especialista</MenuItem>
+                  {Object.entries(skillLevelLabels).map(([value, label]) => (
+                    <MenuItem key={value} value={Number(value)}>
+                      {label}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} sm={3}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                type="number"
                 label="Anos de Experiência"
+                type="number"
                 value={skill.years}
                 onChange={(e) => handleSkillChange(index, 'years', parseInt(e.target.value) || 0)}
-                error={!!errors[`years-${skill.id}`]}
-                helperText={errors[`years-${skill.id}`]}
+                error={!!errors[`${skill.id}-years`]}
+                helperText={errors[`${skill.id}-years`]}
+                required
               />
             </Grid>
 
-            <Grid item xs={12} sm={2}>
-              <IconButton
-                onClick={() => handleRemoveSkill(index)}
-                disabled={skills.length === 1}
-                color="error"
-              >
-                <DeleteIcon />
-              </IconButton>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Categoria"
+                value={skill.category}
+                onChange={(e) => handleSkillChange(index, 'category', e.target.value)}
+              />
             </Grid>
           </Grid>
         </Box>
       ))}
 
-      <Box sx={{ mb: 3, p: 2, border: '1px solid #eee', borderRadius: 1 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Nível</InputLabel>
-              <Select
-                value={currentSkill.level}
-                label="Nível"
-                onChange={(e) => handleLevelChange(e.target.value as SkillLevel)}
-              >
-                <MenuItem value="Beginner">Iniciante</MenuItem>
-                <MenuItem value="Intermediate">Intermediário</MenuItem>
-                <MenuItem value="Advanced">Avançado</MenuItem>
-                <MenuItem value="Expert">Especialista</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
+      <Box sx={{ mb: 2 }}>
+        <Button
+          startIcon={<AddIcon />}
+          onClick={addSkill}
+          variant="outlined"
+          fullWidth
+        >
+          Adicionar Habilidade
+        </Button>
       </Box>
 
-      <Button
-        type="button"
-        startIcon={<AddIcon />}
-        onClick={handleAddSkill}
-        sx={{ mb: 3 }}
-      >
-        Adicionar Habilidade
-      </Button>
-
-      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
         {onBack && (
           <Button onClick={onBack} variant="outlined">
             Voltar
           </Button>
         )}
-        <Button type="submit" variant="contained" color="primary">
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={skills.length === 0}
+        >
           Próximo
         </Button>
       </Box>

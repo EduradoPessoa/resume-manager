@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import type { Experience } from '../../types/resume'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -20,8 +20,8 @@ const defaultExperience: Experience = {
   position: '',
   company: '',
   location: '',
-  start_date: '',
-  end_date: '',
+  startDate: '',
+  endDate: '',
   current: false,
   description: '',
 }
@@ -41,12 +41,12 @@ const ExperienceDialog = ({ open, onClose, onSave, initialData }: ExperienceDial
       newErrors.company = 'Empresa é obrigatória'
     }
 
-    if (!experience.start_date) {
-      newErrors.start_date = 'Data de início é obrigatória'
+    if (!experience.startDate) {
+      newErrors.startDate = 'Data de início é obrigatória'
     }
 
-    if (!experience.current && !experience.end_date) {
-      newErrors.end_date = 'Data de término é obrigatória'
+    if (!experience.current && !experience.endDate) {
+      newErrors.endDate = 'Data de término é obrigatória'
     }
 
     if (!experience.description.trim()) {
@@ -161,48 +161,48 @@ const ExperienceDialog = ({ open, onClose, onSave, initialData }: ExperienceDial
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label
-                      htmlFor="start_date"
+                      htmlFor="startDate"
                       className="block text-sm font-medium text-gray-700"
                     >
                       Data de Início
                     </label>
                     <input
                       type="date"
-                      id="start_date"
-                      value={experience.start_date}
+                      id="startDate"
+                      value={experience.startDate}
                       onChange={(e) =>
-                        setExperience({ ...experience, start_date: e.target.value })
+                        setExperience({ ...experience, startDate: e.target.value })
                       }
                       className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-navy focus:ring-navy sm:text-sm ${
-                        errors.start_date ? 'border-red-300' : ''
+                        errors.startDate ? 'border-red-300' : ''
                       }`}
                     />
-                    {errors.start_date && (
-                      <p className="mt-1 text-sm text-red-600">{errors.start_date}</p>
+                    {errors.startDate && (
+                      <p className="mt-1 text-sm text-red-600">{errors.startDate}</p>
                     )}
                   </div>
 
                   <div>
                     <label
-                      htmlFor="end_date"
+                      htmlFor="endDate"
                       className="block text-sm font-medium text-gray-700"
                     >
                       Data de Término
                     </label>
                     <input
                       type="date"
-                      id="end_date"
-                      value={experience.end_date}
+                      id="endDate"
+                      value={experience.endDate}
                       onChange={(e) =>
-                        setExperience({ ...experience, end_date: e.target.value })
+                        setExperience({ ...experience, endDate: e.target.value })
                       }
                       disabled={experience.current}
                       className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-navy focus:ring-navy sm:text-sm ${
-                        errors.end_date ? 'border-red-300' : ''
+                        errors.endDate ? 'border-red-300' : ''
                       } ${experience.current ? 'bg-gray-100' : ''}`}
                     />
-                    {errors.end_date && (
-                      <p className="mt-1 text-sm text-red-600">{errors.end_date}</p>
+                    {errors.endDate && (
+                      <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>
                     )}
                   </div>
                 </div>
@@ -217,7 +217,7 @@ const ExperienceDialog = ({ open, onClose, onSave, initialData }: ExperienceDial
                       setExperience({
                         ...experience,
                         current: e.target.checked,
-                        end_date: e.target.checked ? '' : experience.end_date,
+                        endDate: e.target.checked ? '' : experience.endDate,
                       })
                     }
                     className="h-4 w-4 text-navy focus:ring-navy border-gray-300 rounded"
@@ -329,8 +329,8 @@ const ExperienceForm = ({ data, onUpdate }: ExperienceFormProps) => {
                     {experience.company} • {experience.location}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {formatDate(experience.start_date)} -{' '}
-                    {experience.current ? 'Atual' : formatDate(experience.end_date)}
+                    {formatDate(experience.startDate)} -{' '}
+                    {experience.current ? 'Atual' : formatDate(experience.endDate)}
                   </p>
                 </div>
                 <div className="flex space-x-2">

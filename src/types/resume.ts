@@ -1,20 +1,22 @@
-export type SkillLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+export type SkillLevel = 1 | 2 | 3 | 4;
 
 export interface PersonalInfo {
   fullName: string;
   email: string;
   phone: string;
   location: string;
-  summary?: string;
+  summary: string;
   linkedin?: string;
   github?: string;
   website?: string;
+  portfolio?: string;
+  about?: string;
 }
 
 export interface Experience {
-  id: string;
-  position: string;
   company: string;
+  position: string;
+  location: string;
   startDate: string;
   endDate?: string;
   current: boolean;
@@ -23,10 +25,10 @@ export interface Experience {
 }
 
 export interface Education {
-  id: string;
-  degree: string;
   institution: string;
+  degree: string;
   field: string;
+  location: string;
   startDate: string;
   endDate?: string;
   current: boolean;
@@ -39,6 +41,7 @@ export interface Skill {
   name: string;
   level: SkillLevel;
   years: number;
+  category?: string;
 }
 
 export interface Template {
@@ -50,16 +53,16 @@ export interface Template {
 }
 
 export interface Resume {
-  id: string;
+  id?: string;
   userId: string;
-  name: string;
+  title: string;
   template: 'minimalist' | 'modern';
   personalInfo: PersonalInfo;
   experience: Experience[];
   education: Education[];
   skills: Skill[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   isPublic?: boolean;
   isPremium?: boolean;
 }

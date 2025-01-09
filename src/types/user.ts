@@ -2,17 +2,12 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  phone?: string;
   isAdmin: boolean;
   isBlocked: boolean;
-  lastLogin?: string;
+  isPremium: boolean;
   createdAt: string;
   updatedAt: string;
-  consentTerms: boolean;
-  dataUsagePreferences: {
-    marketing: boolean;
-    analytics: boolean;
-    thirdParty: boolean;
-  };
 }
 
 export interface Message {
@@ -21,15 +16,16 @@ export interface Message {
   adminId: string;
   subject: string;
   content: string;
-  read: boolean;
+  type: 'email' | 'whatsapp';
+  status: 'pending' | 'sent' | 'failed';
   createdAt: string;
 }
 
 export interface UserConsent {
   id: string;
   userId: string;
-  type: 'terms' | 'privacy' | 'marketing' | 'analytics' | 'thirdParty';
+  type: 'terms' | 'privacy';
   granted: boolean;
-  timestamp: string;
-  ipAddress: string;
+  version: string;
+  grantedAt: string;
 }

@@ -30,7 +30,7 @@ import MinimalistTemplate from '../components/templates/MinimalistTemplate'
 import Watermark from '../components/Watermark'
 
 const ViewResume: React.FC = () => {
-  const { id } = useParams()
+  const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
   const [resume, setResume] = useState<Resume | null>(null)
@@ -40,22 +40,26 @@ const ViewResume: React.FC = () => {
   const printRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!id) return
-
-    try {
-      const loadedResume = getResume(id)
-      if (!loadedResume) {
-        setError('Currículo não encontrado')
-        return
+    const fetchResume = async () => {
+      if (id) {
+        try {
+          const loadedResume = await getResume(id)
+          if (!loadedResume) {
+            setError('Currículo não encontrado')
+            return
+          }
+          setResume(loadedResume)
+          setSelectedTemplate(loadedResume.template_id)
+        } catch (err) {
+          console.error('Erro ao carregar currículo:', err)
+          setError('Erro ao carregar currículo')
+        } finally {
+          setLoading(false)
+        }
       }
-      setResume(loadedResume)
-      setSelectedTemplate(loadedResume.template_id)
-    } catch (err) {
-      console.error('Erro ao carregar currículo:', err)
-      setError('Erro ao carregar currículo')
-    } finally {
-      setLoading(false)
     }
+
+    fetchResume()
   }, [id])
 
   const handleDownloadPDF = async () => {
